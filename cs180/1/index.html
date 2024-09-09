@@ -21,30 +21,50 @@
         <p> Sergei Mikhailovich Prokudin-Gorskii was a Russian photographer who pioneered color photography in the early 20th century. He took thousands of color pictures, each a series of three exposures of a scene onto a glass plate using red, green, and blue filters. </p>
         <p> Each of these plates have been digitized as a single image containing the different plates aligned vertically on each other, with the blue plate on top, the green plate in the middle, and the red plate on the bottom. </p>
         <p> The goal of this project is to take the digitized versions of those glass plates and to employ image processing techniques to align the plates (via translations/displacement) to produce a full color photograph with as few artifacts as possible. </p>
+
+
     </div>
         
     <!-- Insert image grid here -->
 
     <div>
         <h1> Approach </h1>
-        <p> The images are first divided into thirds to isolate the blue, green, and red plates. At this point, I can match images using a normalized cross-correlation index. This is equivalent to normalizing two plates, then computing their dot product. This gives a decent approximation of how close two images match each other. </p>
-        <p> To make the matching index more accurate, I take only the center 90% of the image (removing 5% of the image size from each border). This prevents the border present in the original images of the plates from causing any issues. Then, I test various displacements, up to +/-5% of the image size. For example, for a 350x400 image, I would test displacements from -17 to +16 (max is excluded) for the X dimension, and -20 to +19 for the Y dimension. Once I calculate the optimal displacement, I can align the three plates together to form a fully colored image by setting the red, green, and blue values based on the corresponding plate for that color. (In the later galleries, 'G: (X, Y)' represents the X, Y offset to align the green plate, and 'R: (X, Y)' for the red plate.)</p>
-        <p>The primary issue with this approach is that it becomes much slower with a larger image. To combat this, I employed an image pyramid method to drastically reduce the amount of displacements the algorithm needs to check at higher resolutions. Specifically, if the image is too large, each plate is shrunk to roughly 100 pixels along the shortest side (determined via log base 2 of the shortest side divided by 100). Then, I calculate the optimal displacement for the smallest image as before. I can then double the size of the image and the previously-calculated optimal displacement. At this point, I only need to look at the closest displacements for this larger resolution, for example +/-3 pixels in either the X or Y direction. This continues until the best displacement is calculated for the original full-size image.</p>
-        <p>For an estimation on how much this will speed up calculations, a 3200x4000 image would require checking 320 different X displacements ([-160, 159]) and 400 different Y displacements ([-200, 199]) for images of size 2880x3600. Instead, I can calculate the best displacement for a 100x120 image, with 120 different displacements, and then 9 different displacements for each larger image up to the original 3200x4000. This is several orders of magnitudes faster.</p>
+        <p> Originally, we started out with a simple algorithm; try a small range of displacements between [-15, 15], and pick the result that would best minimize L2 (Euclidean distance). However, we quickly found that L2 was too "absorbed" in the pixel information, i.e not as resilient to changes in brightness, which led to worse offset selections for alignment. For the sake of clarity, when we mean offset, we are referring to an x/y vector (deltaX, deltaY) from which we shift our desired image (im1) to align (to the target image, referred to as im2 in our align algorithm). </p>
 
-        The only image that proved to be difficult to match was the image of the Emir of Bukhara, as shown below. This is most likely because the blue plate was used as the reference for matching, and in this case there was a very high amount of blue, but a very low amount of red (the plate that had the incorrect displacement). Other than this specific image, the other examples were aligned well.
+        <p> The first change we ended up making was to swap the L2 distance method out for normalized cross correlation. This helped improve the output results but, still resulted in extremely misaligned images. Notably, the majority of the work then shifted to debugging the 'emir' image using the pyramid algorithm - here, the red image was very evidently misaligned. Chasing alignment down the alley, we applied advice from other students on Ed that a manual crop of ~15% removed some of the color excessive-borders that would pop up on the sides. We did see that this improve alignment, but the tunnel-ending light was still very far away.</p>
 
+        <p> We also noticed that the run took quite a bit of time. While the recommended approach was to create a gaussian image pyramid, we believed that this idea was for suckas. So instead, we progressively sampled patches of some size R, and aligning on that until there was evidence that the score was marginally increasing - i.e if the progressive differences between score increases was under a value eps, we would quit displacement testing. This did provide ~1.5x speedup, but we weren't really clawing at the root of the issue, which was the massive displacement window. </p>
+    
+        
+        <p> Swallowing our egos, we admitted that we needed to slash the displacement window, and the clearest way highlighted by Ed users seemed to be ... a pyramid search. With the pyramid search in place, we saw the improvement in alignment, as well as a SIGNIFICANT speedup - a program that would take minutes now would now execute in under thirty seconds.</p>
+
+
+        <img src="./media/cathedral.jpg" width="300px" height="900px"/>
     </div>
 
     <div>
         <h1> Results </h1>
 
+        <h2> Single Scale Implementation </h2>
+        <!-- Discuss the single scale implementation results, cropping, etc.-->
+        <img src="./media/cathedral_aligned.jpg" />
+        <hr /> 
+        As seen, the single scale implementation is able to achieve alignment in the majority of the area. However, there is an annoying bit of border left floating at the top, excess from the 15%-on-all-sides crop we performed.
 
+        <h2> Multi Scale Pyramid Implementation </h2>
+        <img src="./media/emir_aligned.png" width="300px" height="300px"/>
+        <img src="./media/onion_church_aligned.png" width="300px" height="300px"/>
+        <img src="./media/sculpture_aligned.png" width="300px" height="300px"/>
+        <img src="./media/melons_aligned.png" width="300px" height="300px"/>
+
+        We see the best results in the picture with the melons, with the only evidence alignment coming from the border from the top. The second best comes in the statue, which does 
+        have a little bit of noticable color jitter and that yet-too-annoying band of red residue, but aligned for the majority. For the top two, the color jitter is hard not to notice - while the alignment seems to be 
+        performing, we can see evidence that these images were spliced together, particularly at the edges - check out the white top of the emir as an example to see what I'm referring to.
     </div>
 
     <div>
         <h1> Bells and Whistles </h1>
-        
+        To implement if I had some time.
     </div>
         
     
