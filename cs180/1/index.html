@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Portfolio</title>
+    <title> CS 180 - Project 1 </title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -10,7 +10,43 @@
     </style>
 </head>
 <body>
-    <h1> Project 1 </h1>
+    <div>
+        <h1 >Aligning the Prokudin-Gorskii photo collection</h1>
+        <h4 >Ansh Chaurasia</h4>
+        <h5 >CS 180 Project 1</h5>
+    </div>
+
+    <div>
+        <h1> Project Overview </h1>
+        <p> Sergei Mikhailovich Prokudin-Gorskii was a Russian photographer who pioneered color photography in the early 20th century. He took thousands of color pictures, each a series of three exposures of a scene onto a glass plate using red, green, and blue filters. </p>
+        <p> Each of these plates have been digitized as a single image containing the different plates aligned vertically on each other, with the blue plate on top, the green plate in the middle, and the red plate on the bottom. </p>
+        <p> The goal of this project is to take the digitized versions of those glass plates and to employ image processing techniques to align the plates (via translations/displacement) to produce a full color photograph with as few artifacts as possible. </p>
+    </div>
+        
+    <!-- Insert image grid here -->
+
+    <div>
+        <h1> Approach </h1>
+        <p> The images are first divided into thirds to isolate the blue, green, and red plates. At this point, I can match images using a normalized cross-correlation index. This is equivalent to normalizing two plates, then computing their dot product. This gives a decent approximation of how close two images match each other. </p>
+        <p> To make the matching index more accurate, I take only the center 90% of the image (removing 5% of the image size from each border). This prevents the border present in the original images of the plates from causing any issues. Then, I test various displacements, up to +/-5% of the image size. For example, for a 350x400 image, I would test displacements from -17 to +16 (max is excluded) for the X dimension, and -20 to +19 for the Y dimension. Once I calculate the optimal displacement, I can align the three plates together to form a fully colored image by setting the red, green, and blue values based on the corresponding plate for that color. (In the later galleries, 'G: (X, Y)' represents the X, Y offset to align the green plate, and 'R: (X, Y)' for the red plate.)</p>
+        <p>The primary issue with this approach is that it becomes much slower with a larger image. To combat this, I employed an image pyramid method to drastically reduce the amount of displacements the algorithm needs to check at higher resolutions. Specifically, if the image is too large, each plate is shrunk to roughly 100 pixels along the shortest side (determined via log base 2 of the shortest side divided by 100). Then, I calculate the optimal displacement for the smallest image as before. I can then double the size of the image and the previously-calculated optimal displacement. At this point, I only need to look at the closest displacements for this larger resolution, for example +/-3 pixels in either the X or Y direction. This continues until the best displacement is calculated for the original full-size image.</p>
+        <p>For an estimation on how much this will speed up calculations, a 3200x4000 image would require checking 320 different X displacements ([-160, 159]) and 400 different Y displacements ([-200, 199]) for images of size 2880x3600. Instead, I can calculate the best displacement for a 100x120 image, with 120 different displacements, and then 9 different displacements for each larger image up to the original 3200x4000. This is several orders of magnitudes faster.</p>
+
+        The only image that proved to be difficult to match was the image of the Emir of Bukhara, as shown below. This is most likely because the blue plate was used as the reference for matching, and in this case there was a very high amount of blue, but a very low amount of red (the plate that had the incorrect displacement). Other than this specific image, the other examples were aligned well.
+
+    </div>
+
+    <div>
+        <h1> Results </h1>
+
+
+    </div>
+
+    <div>
+        <h1> Bells and Whistles </h1>
+        
+    </div>
+        
     
 </body>
 </html>
