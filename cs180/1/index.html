@@ -7,6 +7,26 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
+        table {
+            width: 100%;
+            table-layout: fixed;
+        }
+        td {
+            text-align: center;
+            vertical-align: top;
+        }
+        img {
+            max-width: 300px;
+            max-height: 300px;
+        } 
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            overflow-x: auto;
+        }
     </style>
 </head>
 <body>
@@ -25,7 +45,67 @@
 
     </div>
         
-    <!-- Insert image grid here -->
+    <h2> The Images to Test </h2>
+    <table>
+        <tr>
+          <td>
+            <img src="./media/emir.jpg" />
+            <p> Emir </p>
+          </td>
+          <td>
+            <img src="./media/church.jpg" />
+            <p> Church </p>
+          </td>
+          <td>
+            <img src="./media/lady.jpg" />
+            <p> Lady </p>
+          </td>
+          <td>
+            <img src="./media/melons.jpg" />
+            <p> Melons </p>
+          </td>
+          <td>
+            <img src="./media/tobolsk.jpg" />
+            <p> Tobolsk </p>
+          </td>
+          <td>
+            <img src="./media/icon.jpg" />
+            <p> Icon </p>
+          </td>
+          <td>
+            <img src="./media/sculpture.jpg" />
+            <p> Sculpture </p>
+          </td>
+          <td>
+            <img src="./media/three_generations.jpg" />
+            <p> Three Generations </p>
+          </td>
+          <td>
+            <img src="./media/train.jpg" />
+            <p> Train </p>
+          </td>
+          <td>
+            <img src="./media/self_portrait.jpg" />
+            <p> Self Portrait </p>
+          </td>
+          <td>
+            <img src="./media/onion_church.jpg" />
+            <p> Onion Church </p>
+          </td>
+          <td>
+            <img src="./media/monastery.jpg" />
+            <p> Monastery </p>
+          </td>
+          <td>
+            <img src="./media/harvesters.jpg" />
+            <p> Harvesters </p>
+          </td>
+          <td>
+            <img src="./media/cathedral.jpg" />
+            <p> Cathedral </p>
+          </td>
+        </tr>
+      </table>
 
     <div>
         <h1> Approach </h1>
@@ -38,8 +118,48 @@
         
         <p> Swallowing our egos, we admitted that we needed to slash the displacement window, and the clearest way highlighted by Ed users seemed to be ... a pyramid search. With the pyramid search in place, we saw the improvement in alignment, as well as a SIGNIFICANT speedup - a program that would take minutes now would now execute in under thirty seconds.</p>
 
+        <h3> Picture of the Overall Algorithm</h3> 
+        <pre><code>
+            function align(im1, im2, D, min_resolution):
+            
+                best_offset ← (0, 0)
+                best_score ← -∞
+            
+                total_pixels ← width(im1) * height(im1)
+            
+                gaussian_pyramid ← create_gaussian_pyramid(im1, im2, min_resolution)
+            
+                if gaussian_pyramid is empty:
+                    gaussian_pyramid ← [(im1, im2)]
+            
+                diff_x ← range(-D / 2, D / 2 + 1)
+                diff_y ← range(-D / 2, D / 2 + 1)
+            
+                for each (img1, img2) in gaussian_pyramid:
+                    
+                    prod ← cartesian_product(diff_x, diff_y)
+                    best_offset ← (2 * best_offset[0], 2 * best_offset[1])
+                    
+                    sampled_im1 ← sobel_filter(img1)
+                    sampled_im2 ← sobel_filter(img2)
+                    
+                    shifted_im1 ← shift_image(sampled_im1, best_offset)
+            
+                    for each (a, b) in prod:
+                        shifted_current_im1 ← shift_image(shifted_im1, (a, b))
+                        score ← metric(shifted_current_im1, sampled_im2)
+            
+                        if score > best_score:
+                            best_score ← score
+                            best_offset ← (a, b)
+            
+                    diff_x ← range(best_offset[0] - 1, best_offset[0] + 1)
+                    diff_y ← range(best_offset[1] - 1, best_offset[1] + 1)
+            
+                aligned_im1 ← shift_image(im1, best_offset)
+                return aligned_im1, best_offset, best_score
+        </code></pre>
 
-        <img src="./media/cathedral.jpg" width="300px" height="900px"/>
     </div>
 
     <div>
@@ -47,15 +167,104 @@
 
         <h2> Single Scale Implementation </h2>
         <!-- Discuss the single scale implementation results, cropping, etc.-->
-        <img src="./media/cathedral_aligned.jpg" />
+
+        <table>
+            <tr>
+                <td>
+                    <img src="./media/cathedral_aligned.jpg" />
+                    <h5> Cathedral </h5>
+                    <p> Red Offset of (+4, +12)</p>
+                    <p> Green Offset of (+4, +4)</p>
+                </td>
+
+                <td>
+                    <img src="./media/tobolsk_aligned.jpg" />
+                    <h5> Tobolsk </h5>
+                    <p>Red Offset: (+4, +8)</p>
+                    <p>Green Offset: (+4, +4)</p>
+                </td>
+
+            </tr>
+        </table>
+
         <hr /> 
         As seen, the single scale implementation is able to achieve alignment in the majority of the area. However, there is an annoying bit of border left floating at the top, excess from the 15%-on-all-sides crop we performed.
 
         <h2> Multi Scale Pyramid Implementation </h2>
-        <img src="./media/emir_aligned.png" width="300px" height="300px"/>
-        <img src="./media/onion_church_aligned.png" width="300px" height="300px"/>
-        <img src="./media/sculpture_aligned.png" width="300px" height="300px"/>
-        <img src="./media/melons_aligned.png" width="300px" height="300px"/>
+
+        <table>
+            <tr>
+              <td>
+                <img src="./media/emir_aligned.jpg" />
+                <h5> Emir </h5>
+                <p>Red Offset: (+40, +104)</p>
+                <p>Green Offset: (+24, +48)</p>
+              </td>
+              <td>
+                <img src="./media/lady_aligned.jpg" />
+                <h5> Lady </h5>
+                <p>Red Offset: (+8, +120)</p>
+                <p>Green Offset: (+8, +56)</p>
+              </td>
+              <td>
+                <img src="./media/melons_aligned.jpg" />
+                <h5> Melons </h5>
+                <p>Red Offset: (+0, +192)</p>
+                <p>Green Offset: (+0, +96)</p>
+              </td>
+
+                <td>
+                    <img src="./media/sculpture_aligned.jpg" />
+                    <h5> Sculpture </h5>
+                    <p>Red Offset: (-32, +128)</p>
+                    <p>Green Offset: (+0, +32)</p>
+                </td>
+              <td>
+                <img src="./media/icon_aligned.jpg" />
+                <h5> Icon </h5>
+                <p>Red Offset: (+32, +96)</p>
+                <p>Green Offset: (+32, +32)</p>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <img src="./media/three_generations_aligned.jpg" />
+                <h5> Three Generations </h5>
+                <p>Red Offset: (+0, +96)</p>
+                <p>Green Offset: (+0, +64)</p>
+              </td>
+              <td>
+                <img src="./media/train_aligned.jpg" />
+                <h5> Train </h5>
+                <p>Red Offset: (+32, +96)</p>
+                <p>Green Offset: (+32, +64)</p>
+              </td>
+              <td>
+                <img src="./media/self_portrait_aligned.jpg" />
+                <h5> Self Portrait</h5>
+                <p>Red Offset: (+32, +160)</p>
+                <p>Green Offset: (+0, +16)</p>
+              </td>
+              <td>
+                <img src="./media/onion_church_aligned.jpg" />
+                <h5> Onion Church </h5>
+                <p>Red Offset: (+32, +96)</p>
+                <p>Green Offset: (+32, +64)</p>
+              </td>
+              <td>
+                <img src="./media/monastery_aligned.jpg" />
+                <h5> Monastery </h5>
+                <p>Red Offset: (+4, +4)</p>
+                <p>Green Offset: (+0, -4)</p>
+              </td>
+              <td>
+                <img src="./media/harvesters_aligned.jpg" />
+                <h5> Harvesters </h5>
+                <p>Red Offset: (+0, +128)</p>
+                <p>Green Offset: (+32, +64)</p>
+              </td>
+            </tr>
+        </table>
 
         We see the best results in the picture with the melons, with the only evidence alignment coming from the border from the top. The second best comes in the statue, which does 
         have a little bit of noticable color jitter and that yet-too-annoying band of red residue, but aligned for the majority. For the top two, the color jitter is hard not to notice - while the alignment seems to be 
