@@ -225,6 +225,12 @@
                 <p>Red Offset: (+32, +96)</p>
                 <p>Green Offset: (+32, +32)</p>
               </td>
+              <td>
+                <img src="./media/church_aligned.jpg" />
+                <h5> Church </h5>
+                <p>Red Offset: (+0, +64)</p>
+                <p>Green Offset: (+0, +32)</p>
+              </td>
             </tr>
             <tr>
               <td>
@@ -267,13 +273,91 @@
         </table>
 
         We see the best results in the picture with the melons, with the only evidence alignment coming from the border from the top. The second best comes in the statue, which does 
-        have a little bit of noticable color jitter and that yet-too-annoying band of red residue, but aligned for the majority. For the top two, the color jitter is hard not to notice - while the alignment seems to be 
-        performing, we can see evidence that these images were spliced together, particularly at the edges - check out the white top of the emir as an example to see what I'm referring to.
+        have a little bit of noticable color jitter and that yet-too-annoying band of red residue, but aligned for the majority. However, the issue of the "color band" at the top still remains. 
+        While I attempted to remove this color band, I was unsuccessful in trying to patch it. Professor Efros, after lecture, recommended to try correlating the three channels in this area - one thing that I was
+        interested in trying, but not too sure how to implement.
+    </div>
+    <div>
+      <h2> Custom Image Bonanza </h2>
+
+        <table>
+          <tr>
+            <td>
+              <img src="./media/siren_aligned.jpg" />
+              <p>Sirenʹ v Gatchinskom parki︠e︡</p>
+              <p> Red Offset: (+32, +64) </p>
+              <p> Green Offset: (+32, +32) </p>
+            </td>
+            <td>
+              <img src="./media/etrus_aligned.jpg" />
+              <p>Ėtrusskīi︠a︡ vazy. V Ėrmitazhi︠e︡ v SPeterburgi︠e︡</p>              
+              <p> Red Offset: (+0, +96) </p>
+              <p> Green Offset: (+0, +0) </p>
+            </td>
+          </tr>
+        </table>
+
     </div>
 
     <div>
-        <h1> Bells and Whistles </h1>
-        To implement if I had some time.
+        <h2> Bells and Whistles </h2>
+
+        <h3> Minor improvements with Major Results - Resolution Bashing </h3>
+        Initially, some of the images still turned out to be misaligned. I accidentally stumbled upon the fact that changing the resolution at which I do exhaustive displacement search from (128, 128)
+        to (512, 512) - a larger resolution - improved results with negligible runtime downsides. However, when I did this, the melons image drastically dropped in alignment performance. In order to get the best of both worlds, 
+        I ran a grid search through 3 resolutions - (128, 128), (256, 256), and (512, 512), and chose the image with the best average (across green and red) metric value.
+
+        <h2> Metric Composition </h2>
+
+        The final metric ended up being a weighted average aggregation of the Normalized Cross Correlation (on the image) and the Structural Similarity Image Metric (SSIM). 
+
+        While I attempted to integrate in gradient based methods, such as computing gradients from an image passed through the Sobel filter, those didn't end up going very far, as they regularly 
+        killed alignment. Here's an example of how the emir alignment might look with a weighted average of the three. 
+
+        <h3> Gradient Based Metric Result for Emir </h3>
+        <table>
+          <tr>
+            <td>
+              <img src="./media/emir_aligned.jpg" />
+              <p> Before (with only NCC) </p>
+            </td>
+            <td>
+              <img src="./media/emir_gradient.jpg" />
+              <p> After (with Sobel gradients) </p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <img src="./media/church_aligned.jpg" />
+              <p> Before (with only NCC) </p>
+            </td>
+            <td>
+              <img src="./media/church_gradient.jpg" />
+              <p> After (with Sobel gradients) </p>
+            </td>
+          </tr>
+        </table>
+
+          Notice the color jitter now showing? That was the issue issue with the sobel gradients. In retrospect, I noticed that this issue happened specifically with the Emir and for the SSIM and Sobel Edge Gradient method, so neither one really helped or hurted.
+          It would be interesting to see if there is a way to precisely determine criterion for solely using NCC vs a combination with NCC + Sobel/SSIM (below).
+
+
+        <h3> SSIM Based for Emir </h3>
+        <table>
+          <tr>
+            <td>
+              <img src="./media/emir_aligned.jpg" />
+              <p> Before (with only NCC) </p>
+            </td>
+            <td>
+              <img src="./media/emir_ssim.jpg" />
+              <p> After (with SSIM ) </p>
+            </td>
+          </tr>
+        </table>
+
+        A similar story pops up with the SSIM - minor misalignment. I suspect that a weighted combination of the two would probably be the best, with the unverified hope that SSIM would be able to pick up feature 
+        based alignment that the NCC wouldn't be able to. Then again, we could always grab a large Halloween bag of images and try the Frechet Inception Distance FID ... why not bring a bazooka to a knife fight? 
     </div>
         
     
