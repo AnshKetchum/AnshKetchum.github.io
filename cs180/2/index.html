@@ -33,7 +33,11 @@
     <h1> Project 2 - Fun with Filters and Frequencies! </h1>
 
     <h2> Part 1.1: Finite Difference Operator</h2>
-    <p> We compute the derivative in the x and y directions, and then combine them via the Pythagorean theorem. </p>
+    <p> We compute the derivative in the x and y directions, and then combine them via the Pythagorean theorem to obtain gradient magnitude. </p>
+    <pre>
+        def edge_image(gradient_x, gradient_y):
+            return np.hypot(gradient_x, gradient_y)
+    </pre>
     <table>
         <tr>
             <td> 
@@ -42,15 +46,15 @@
             </td>
             <td> 
                 <img src="./media/derivative_x.png" />
-                <p> Derivative in the x direction. This comes from kernel [[1, -1]], which takes a local pixel difference. </p>
+                <p> Derivative in the x direction. This comes from kernel [[1, -1]], which takes a local pixel difference. Notice how the tripod is very clearly defined, where things like the outline of the cameraman's jacket isn't. </p>
             </td>
             <td> 
                 <img src="./media/derivative_y.png" />
-                <p> Derivative in the x direction. This comes from kernel [[1, -1]], which takes a local pixel difference. </p>
+                <p> Derivative in the x direction. This comes from kernel [[1], [-1]], which takes a local pixel difference across the y channel (note the bracketing). Here, notice the bare minimum definition of the tripod. Look at the opera house in the background, and how the curves are very clearly defined. </p>
             </td>
             <td> 
                 <img src="./media/binarized_derivative.png" />
-                <p> Binarized output after taking the output. In order to perform binarization, we took all pixel values in top 97.5% percentile, resulting in the figure.</p>
+                <p> Binarized output after taking the output to compute gradient magnitude. In order to perform binarization, we took all pixel values in top 97.5% percentile, resulting in the figure. There are other options that are more standard (thresholding by a high value, say 95%), but we believe that this method would provide more consistent results across images. </p>
             </td>
         </tr>
     </table>
@@ -64,15 +68,15 @@
             </td>
             <td> 
                 <img src="./media/blurred_derivative_x.png" />
-                <p> Derivative in the x direction. This comes from kernel [[1, -1]], which takes a local pixel difference. </p>
+                <p> Derivative in the x direction. Note the darkness and less defined features within the tripod in comparison to the image above. </p>
             </td>
             <td> 
                 <img src="./media/blurred_derivative_y.png" />
-                <p> Derivative in the x direction. This comes from kernel [[1, -1]], which takes a local pixel difference. </p>
+                <p> Derivative in the x direction. Reflects the comments for the x-direction derivative image (on the left), the opera is now barely visible. </p>
             </td>
             <td> 
                 <img src="./media/blurred_binarized.png" />
-                <p> Binarized output after taking the output. In order to perform binarization, we took all pixel values in top 97.5% percentile, resulting in the figure.</p>
+                <p> Binarized output after taking the hypotenuse to compute gradient magnitude. In order to perform binarization, we took all pixel values in top 97.5% percentile, resulting in the figure.</p>
             </td>
         </tr>
     </table>
@@ -180,11 +184,11 @@
             </td>
             <td> 
                 <img src="./media/emily-blunt-output.png" />
-                <p> Emily Blunt refined used as a low frequency, while smiling Emily is used as a higher frequency. Pretty bad failure, the blonde hair is not clearly visible from afar. </p>
+                <p> Emily Blunt refined used as a low frequency, while smiling Emily is used as a higher frequency. Pretty <strong>bad failure</strong>, the blonde hair is not clearly visible from afar. </p>
             </td>
             <td> 
                 <img src="./media/emily-blunt-output-2.png" />
-                <p> Emily Blunt refined used as a higher frequence, while smiling Emily is used as a lower frequency. The best so far, and the coolest to see the "Mona Lisa" effect. </p>
+                <p> Emily Blunt refined used as a higher frequence, while smiling Emily is used as a lower frequency. The <strong>best</strong> so far, and the coolest to see the "Mona Lisa" effect. </p>
             </td>
         </tr>
         <tr>
@@ -204,7 +208,7 @@
         </tr>
     </table>
 
-    <h3> Morph between different objects </h3>
+    <h3> Morph between different objects - Ed Sheeran and a Wolf</h3>
     <p> This was an example I originally saw someone doing a similar exercise in the past perform. To benchmark whether I was on the right track (getting similar results to "state of the art"), I listed the output. Here is the link to the original report, and the example: <a href="https://ddavidhahn.github.io/194-26_Project3/"> https://ddavidhahn.github.io/194-26_Project3/ </a></p>
     <table>
         <tr>
@@ -274,6 +278,7 @@
             </td>
         </tr>
     </table>
+    <p> As you can see the images on the left reprsent lower frequencies, the ones in the center being more middle, and the last being the highest. There is no clear visible split between the apple and the orange thanks to the Gaussian pyramids for the masks (from the paper, second algorithm), alongside a smoothing region</p>
 
 
     <h2> Part 2.4: Multiresolution Blending </h2>
@@ -281,23 +286,31 @@
     <table>
         <tr>
             <td>
+                <img src="./media/pewds.jpg" />
+                <p> PewDiePie, the original YouTuber </p>
+            </td>
+            <td>
+                <img src="./media/mrbeast.jpg" />
+                <p> Mr Beast, the current reigning king of YouTube and of my childhood :) </p>
+            </td>
+            <td>
                 <img src="./media/goats.png" />
                 <p>The greatest YouTubers of all time, prove me wrong! Made with a similar, vertical mask </p>
             </td>
-            <tr>
-                <td>
-                    <img src="./media/aang_on_shrooms.png" />
-                    <p> Aang on shrooms. Made with an upper triangular mask, with a lower than default initial value for the region where the ones are supposed to be. Cool thing was that the Aang image was transparent. </p>
-                </td>
-                <td>
-                    <img src="./media/mask.png" />
-                    <p>The mask </p>
-                </td>
-                <td>
-                    <img src="./media/masked_aang.png" />
-                    <p>The mask with Aaang</p>
-                </td>
-            </tr>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/aang_on_shrooms.png" />
+                <p> Aang on shrooms. Made with an upper triangular mask, with a lower than default initial value for the region where the ones are supposed to be. Cool thing was that the Aang image was transparent. </p>
+            </td>
+            <td>
+                <img src="./media/mask.png" />
+                <p>The mask </p>
+            </td>
+            <td>
+                <img src="./media/masked_aang.png" />
+                <p>The mask with Aaang</p>
+            </td>
         </tr>
     </table>
 </body>
