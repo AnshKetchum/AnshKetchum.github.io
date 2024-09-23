@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> CS 180 - Project 2 </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            table-layout: fixed;
+        }
+        td {
+            text-align: center;
+            vertical-align: top;
+        }
+        img {
+            max-width: 300px;
+            max-height: 300px;
+        } 
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1> Project 2 - Fun with Filters and Frequencies! </h1>
+
+    <h2> Part 1.1: Finite Difference Operator</h2>
+    <p> We compute the derivative in the x and y directions, and then combine them via the Pythagorean theorem. </p>
+    <table>
+        <tr>
+            <td> 
+                <img src="./media/cameraman.png" />
+                <p> Initial image of a camera man </p>
+            </td>
+            <td> 
+                <img src="./media/derivative_x.png" />
+                <p> Derivative in the x direction. This comes from kernel [[1, -1]], which takes a local pixel difference. </p>
+            </td>
+            <td> 
+                <img src="./media/derivative_y.png" />
+                <p> Derivative in the x direction. This comes from kernel [[1, -1]], which takes a local pixel difference. </p>
+            </td>
+            <td> 
+                <img src="./media/binarized_derivative.png" />
+                <p> Binarized output after taking the output. In order to perform binarization, we took all pixel values in top 97.5% percentile, resulting in the figure.</p>
+            </td>
+        </tr>
+    </table>
+
+    <h2> Part 1.2: Derivative of Gaussian Filter </h2>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/blurred_cameraman.png" />
+                <p> Blurred output. The gaussian kernel was constructed using an outer product of a 1D gaussian sample. </p>
+            </td>
+            <td> 
+                <img src="./media/blurred_derivative_x.png" />
+                <p> Derivative in the x direction. This comes from kernel [[1, -1]], which takes a local pixel difference. </p>
+            </td>
+            <td> 
+                <img src="./media/blurred_derivative_y.png" />
+                <p> Derivative in the x direction. This comes from kernel [[1, -1]], which takes a local pixel difference. </p>
+            </td>
+            <td> 
+                <img src="./media/blurred_binarized.png" />
+                <p> Binarized output after taking the output. In order to perform binarization, we took all pixel values in top 97.5% percentile, resulting in the figure.</p>
+            </td>
+        </tr>
+    </table>
+    <h3> Notable Differences: </h3>
+    <p> Clearly, there edges being captured less accurately post binarization. Additionally, areas that were close to portions of the image with minimal change (which would be erased by a derivative) have finally met their maker - the blur forces all edges to be lower in value, making the top percentage a more elite category. </p>
+
+    <h3> One "magic" filter for blurring and convolution? </h3>
+    <p> Our derivative filter is pretty primative. So we tried to convolve the larger gaussian kernel itself to see if it would compose the convolution. </p>
+    <table>
+        <tr>
+            <td> 
+                <img src="./media/convolved_gaussian_x.png" />
+                <p> Derivative in the x direction. This comes from kernel [[1, -1]] on a gaussian kernel with size 13 and stdev 3, which takes a local pixel difference. </p>
+            </td>
+            <td> 
+                <img src="./media/convolved_gaussian_y.png" />
+                <p> Derivative in the x direction. This comes from kernel [[1, -1]] on a gaussian kernel with size 13 and stdev 3, which takes a local pixel difference. </p>
+            </td>
+            <td> 
+                <img src="./media/dog_derivative.png" />
+                <p> Lo and behold, the same image, twice! </p>
+            </td>
+        </tr>
+    </table>
+
+    <h2> Part 2.1: Image Sharpening </h2>
+    <p> Listed below are some examples of sharpening done using the 'alpha sharpening technique', which consisted of adding alpha * [high pass results] to the original image.
+    <table>
+        <tr>
+            <td> 
+                <img src="./media/taj.jpg" />
+                <p> Original image of the Taj Mahal.  </p>
+            </td>
+            <td> 
+                <img src="./media/sharpened_taj_5.png" />
+                <p> Sharpened with alpha = 5 </p>
+            </td>
+            <td> 
+                <img src="./media/sharpened_taj_10.png" />
+                <p> Sharpened with alpha = 10 </p>
+            </td>
+            <td> 
+                <img src="./media/sharpened_taj_15.png" />
+                <p> Sharpened with alpha = 15 </p>
+            </td>
+        </tr>
+        <tr>
+            <td> 
+                <img src="./media/mrbeast_blurred.png" />
+                <p> Blurred image of GOAT Mr. Beast, kernel size 13 and stdev 3.  </p>
+            </td>
+            <td> 
+                <img src="./media/mrbeast_sharp_5.png" />
+                <p> Sharpened with alpha = 5 </p>
+            </td>
+            <td> 
+                <img src="./media/mrbeast_sharp_10.png" />
+                <p> Sharpened with alpha = 10 </p>
+            </td>
+            <td> 
+                <img src="./media/mrbeast_sharp_15.png" />
+                <p> Sharpened with alpha = 15 </p>
+            </td>
+        </tr>
+    </table>
+    <h3> Observations </h3>
+    <p> While the image isn't too similar to the original, the effects of sharpening are somewhat clear. We can clearly see defined edges around Jimmy's (MrBeast) shirt, and the MrBeast YouTube logo is very clearly standing out from the rest of the black tshirt.</p>
+
+    <h2> Part 2.2: Hybrid Images </h2>
+
+    <h3> Sample Output </h3>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/nutmeg.jpg" />
+                <p> Base image of Nutmeg the cat. </p>
+            </td>
+            <td>
+                <img src="./media/DerekPicture.jpg" />
+                <p> Base image of Derek. </p>
+            </td>
+            <td>
+                <img src="./media/sample-out.png" />
+                <p> Hybrid Image. </p>
+            </td>
+            <td> 
+                <img src="./media/sample-output-2.png" />
+                <p> Hybrid Image, with the low and high frequencies switched. </p>
+            </td>
+        </tr>
+    </table>
+
+    <h3> Change of Expression - Emily Blunt </h3>
+    I am convinced that one of the best actresses is Emily Blunt! To commemorate our favorite actress in god-knows-how-many-movies-I've watched, I tried to capture her in two emotions - one smiling with teeth, and one without. Not quite a Mona Lisa, but it does give off some of those vibes that we discussed Da Vinci 
+    trying to instill. 
+    <table>
+        <tr>
+            <td>
+                <img src="./media/emily-blunt.png" />
+                <p> Base image of Emily Blunt smiling. </p>
+            </td>
+            <td> 
+                <img src="./media/emily-blunt-2.png" />
+                <p> Emily blunt in a more refined stance. </p>
+            </td>
+            <td> 
+                <img src="./media/emily-blunt-output.png" />
+                <p> Emily Blunt refined used as a low frequency, while smiling Emily is used as a higher frequency.</p>
+            </td>
+            <td> 
+                <img src="./media/emily-blunt-output-2.png" />
+                <p> Emily Blunt refined used as a higher frequence, while smiling Emily is used as a lower frequency. The best so far, and the coolest to see the "Mona Lisa" effect. </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/emily-blunt-freqs.png" />
+            </td>
+            <td>
+                <img src="./media/emily-blunt-2-freqs.png" />
+            </td>
+            <td>
+                <img src="./media/emily-blunt-out-freqs.png" />
+            </td>
+            <td>
+                <img src="./media/emily-blunt-out-2-freqs.png" />
+            </td>
+
+        </tr>
+    </table>
+
+    <h3> Morph between different objects </h3>
+    <p> This was an example I originally saw someone doing a similar exercise in the past perform. To benchmark whether I was on the right track (getting similar results to "state of the art"), I listed the output. Here is the link to the original report, and the example: <a href="https://ddavidhahn.github.io/194-26_Project3/"> https://ddavidhahn.github.io/194-26_Project3/ </a></p>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/brown_dog.png" />
+                <p> Base image of a brown dog. </p>
+            </td>
+            <td> 
+                <img src="./media/ed_sheeran.png" />
+                <p> Image of Ed Sheeran. </p>
+            </td>
+            <td> 
+                <img src="./media/hybrid-1.png" />
+                <p> Hybrid, with Ed Sheeran being the high frequencies. </p>
+            </td>
+            <td> 
+                <img src="./media/hybrid-2.png" />
+                <p> Hybrid with the dog being the higher frequency. </p>
+            </td>
+        </tr>
+
+    </table>
+
+    <h2> Part 2.3: Gaussian and Laplacian Stacks </h2>
+    <h3> The journey towards the Oraple</h3>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/blend-1.png" />
+            </td>
+            <td> 
+                <img src="./media/blend-2.png" />
+            </td>
+            <td> 
+                <img src="./media/blend-3.png" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/apple-2.png" />
+            </td>
+            <td>
+                <img src="./media/apple-1.png" />
+            </td>
+            <td>
+                <img src="./media/apple-0.png" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/orange-3.png" />
+            </td>
+            <td>
+                <img src="./media/orange-2.png" />
+            </td>
+            <td>
+                <img src="./media/orange-1.png" />
+            </td>
+        </tr>
+    </table>
+
+
+    <h2> Part 2.4: Multiresolution Blending </h2>
+
+</body>
+</html>
