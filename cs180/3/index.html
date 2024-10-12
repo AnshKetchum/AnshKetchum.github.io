@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            table-layout: fixed;
+        }
+        td {
+            text-align: center;
+            vertical-align: top;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            overflow-x: auto;
+        }
+        img {
+            max-width: 1200px;
+            max-height: 1200px;
+        } 
+    </style>
+    <title> CS 180 - Project 3 </title>
+</head>
+<body>
+    <h1> Project 3 - Face Morphing and Modelling a Photo Collection</h1>
+    <p> This project was focused on learning image morphing techniques, while extending the knowledge we learned during image blending. </p>
+
+    <h2> Part 1 - Defining Correspondences </h2>
+    <p> I used the tool linked <a href="https://cal-cs180.github.io/fa23/hw/proj3/tool.html">here</a> to select and find matching correspondences, which were saved as JSON. Then I found the average points between my two images (p1 + p2) / 2 to provide input to the triangulation. The output of this triangulation looks like the following for the 
+    standard images. </p>
+    <div>
+        <h3> Image containing the triangulation of sample images containing George and Michael
+        <img src="./media/points.png" /> 
+    </div>
+    <p> Note how the triangulation closely resembles both images, due to reletively accurate triangulation from the average "target" point (p1 + p2)/2 transmitting relevant simplexes. </p>
+
+    <h2> Part 2 - Computing the "Mid Way Face" </h2>
+    <p> The main idea behind the image morphing is to first find the desired warped shape using a weighted average of the points according to the parameter warp_frac. Then, matrices to represent the affine transformations between each corresponding triangle between both images and the desired shape. Then we use inverse warping to warp both images into the desired shape. From there we can simply cross-dissolve the two warped images based on dissolve_frac to accurately get the color information. For this part I actually went ahead and coded all the way to part three and implemented the morph function then passed in 0.5 and 0.5 for warp_frac and dissolve_frac respectively.
+    </p>
+
+    <table>
+        <tr>
+            <td>
+                <h2> Ansh (Me) </h2>
+                <img src="./media/me.png" height="400px" width="auto"/>
+            </td>
+            <td>
+                <h2> The mid-way morph</h2>
+                <img src="./media/morph-1.png" height="400px" width="auto" />
+            </td>
+            <td>
+                <h2> A cool friend </h2>
+                <img src="./media/target.png" height="400px" width="auto"/>
+            </td>
+        </tr>
+    </table>
+
+    <h2> Part 3 - The Morph Sequence</h2>
+    <p> Results from stitching the morph sequence together. In this area, we do make some minor adjustments recommended - padding A with 0,0, and 1 and B with 1, 1, 1 
+        in order to allow the transformations to go beyond rotation, scaling, and transformations. Note that the "glow" effect comes from Apple computers' "Remove background" effect.
+    </p>
+    <table>
+        <tr>
+            <td>
+                <h3> Example of a morph of me to my friend</h3>
+                <img src="./media/ansh-friend.gif" height="600px" width="auto" />
+            </td>
+            <td>
+                <h3> Morph of the sample input provided </h3>
+                <img src="./media/george-martin.gif" />
+            </td>
+        </tr>
+    </table>
+
+    <h2> Part 4 - The "Mean Face" of the Population </h2>
+    <p> I chose the <a href="https://fei.edu.br/~cet/facedatabase.html"> FEI database</a> of images. </p>
+
+    <p> For the purposes of subsampling different populations, there was a natural divide between smiling and non-smiling datasets. I took advantage 
+        of that to come up with some pictures, followed up by the global dataset mean.
+    </p>
+
+    <h3> The Average Face </h3>
+    <table>
+        <tr>
+            <td>
+                <h3> Non-smiling Images</h3>
+                <img src="./media/fig1.png" alt="Fail"/>
+            </td>
+            <td>
+                <h3> Smiling Images </h3>
+                <img src="./media/fig2.png" alt="Fail"/>
+            </td>
+            <td>
+                <h3> Global Mean</h3>
+                <img src="./media/global-mean.png" alt="Fail"/>
+            </td>
+        </tr>
+    </table>
+
+    <h3> Sample Faces morphed to the average face </h3>
+    <p> The first row contains the orginal sampled images, followed by the warped images
+
+    <table>
+        <tr>
+            <td>
+                <h4> Sample 25b</h4>
+                <img src="./media/25b.jpg" width="300px"/>
+            </td>
+            <td>
+                <h4> Sample 24a</h4>
+                <img src="./media/24a.jpg" width="300px"/>
+            </td>
+            <td>
+                <h4> Sample 65a</h4>
+                <img src="./media/65a.jpg" width="300px"/>
+            </td>
+            <td>
+                <h4> Sample 100a</h4>
+                <img src="./media/100a.jpg" width="300px" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h4> Sample 25b</h4>
+                <img src="./media/sample-25b.png" width="500px" height="auto"/>
+            </td>
+            <td>
+                <h4> Sample 24a</h4>
+                <img src="./media/sample-24a.png" width="500px" height="auto"/>
+            </td>
+            <td>
+                <h4> Sample 65a</h4>
+                <img src="./media/sample-65a.png" width="500px" height="auto"/>
+            </td>
+            <td>
+                <h4> Sample 100a</h4>
+                <img src="./media/sample-100a.png" width="500px" height="auto" />
+            </td>
+        </tr>
+    </table>
+
+    <p>
+    In these images above, we can note a few key changes: in the middle couples, notice the arrival of wrinkle-like deforms in the image. We can clearly see parts of the triangle in the one on the left, but there is some evidence to suggest that some lines and edges might be 
+    accentuated, such as in the case of sample 65a.
+    </p>
+    
+    <p>
+        Now, here are the two warps, the first one where I warp my face into the average global geometry, and vice versa.
+    </p>
+
+    <table>
+        <tr>
+            <td>
+                <h4> Warping myself </h4>
+                <img src="./media/warp-self.jpg" width="300px"/>
+            </td>
+
+            <td>
+                <h4> Warping the average image </h4>
+                <img src="./media/warp-average.jpg" width="300px"/>
+            </td>
+        </tr>
+
+    </table>
+
+    <h2> Part 5 - Caricatures </h2>
+    <p> To get a caricature of my face by extrapolating from the population mean in part 4, I found another picture of myself, and took some samples from the dataset. </p>
+
+    <table>
+        <tr>
+            <td>
+                <h4> Self </h4>
+                <img src="./media/ansh-2.jpeg" />
+            </td>
+            <td>
+                <h4> Self Warp into Average Image </h4>
+                <img src="./media/ansh-2.jpeg" /> 
+            </td>
+            <td>
+                <h4> Average Global Image </h4>
+                <img src="./media/global-mean.png" />
+            </td>
+            <td>
+                <h4> Average Caracaturized Image </h4>
+                <img src="./media/caricature-2.jpg" />
+            </td>
+        </tr>
+    </table>
+
+    <p> Here are some examples of caricatures on my warp that demonstrate a range of different alphas. </p>
+    <table>
+        <tr>
+            <td>
+                <h4> Alpha = -4 </h4>
+                <img src="./media/caricature_neg_4.jpg" /> 
+            </td>
+
+            <td>
+                <h4> Alpha = -2 </h4>
+                <img src="./media/caricature_neg_2.jpg" /> 
+            </td>
+
+            <td>
+                <h4> Alpha = -1 </h4>
+                <img src="./media/caricature_neg_1.jpg" /> 
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h4> Alpha = 1.5 </h4>
+                <img src="./media/caricature_pos-1_5.jpg" /> 
+            </td>
+
+            <td>
+                <h4> Alpha = 2 </h4>
+                <img src="./media/caricature-0_2-0.jpg" /> 
+            </td>
+
+            <td>
+                <h4> Alpha = 4 </h4>
+                <img src="./media/caricature-4-0.jpg" /> 
+            </td>
+
+        </tr>
+    </table>
+
+    <p> I note that alpha values >1 tend to be extreme moreso in the negative direction than positive. While a -4 alpha completely alters the scope of the image, 
+        a +4 alpha value doesn't make too much significant change on the image except for a small part of the area near the mouth.
+    </p>
+
+    <h2> Bells And Whistles </h2>
+
+    <p> I made a short movie sharing examples from my family images. Unfortunately, my computer is extremely old, and was borderline threatening to crash at multiple points. </p>
+    <p> That being said, I hope you enjoy the movie! Click on the link to see it in the Google Folder </p> 
+
+    <a href="https://drive.google.com/drive/folders/1bOH6jlUXNIPJtDerCzQGO26F6VEMpIhT?usp=sharing"> Link: https://drive.google.com/drive/folders/1bOH6jlUXNIPJtDerCzQGO26F6VEMpIhT?usp=sharing </a>
+
+
+</body>
+</html>
