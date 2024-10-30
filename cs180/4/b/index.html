@@ -31,7 +31,7 @@
 </head>
 <body>
     <h1> Project 4 - Auto-Stitching Photo Mosaics </h1>
-    <p> First, a bit of a repeat from part A ... if you're making a beeline for the automatically generated images, scroll down to the bottom, Part 6! </p>
+    <p> First, a bit of a repeat from part A ... if you're making a beeline for the automatically generated images, scroll down to the bottom, Part 6! (CTRL + F "Part 6") </p>
     <h2> Part 1: Shoot the Pictures: </h2>
     <table>
         <tr>
@@ -238,7 +238,7 @@
     elaborate ways of improving image quality. Little did I realize that simply doing a weighted average over the intersection would suffice to provide the biggest jump in 
     performance. Don't oversolve a problem unless required. </p>
 
-    <h2> Project Part 4B </h2>
+    <h2> Project Part 4B (Part 6)</h2>
 
     <h2> Step 1: Detecting corner features in an image </h2>
 
@@ -268,38 +268,48 @@
             </td>
         </tr>
     </table>
+    <p> Notes: When I implemented the Harris algorithm, I initially was confused to why ANMS would be so crucial. However, that doubt was quickly cleared after seeing 
+        the results. I initially faced some challenges in verifying my output for ANMS was coming out right, especially given the large number of points - for the images you see, there are 
+        500 points being created, with an edge supression of 20. I'm honestly still very dubious on whether modifying the edge score has a major impact in the process,
+        changes in the value didn't seem to translate to understandable changes in output. 
+    </p>
+
+    <p>
+        I still don't have much clarity on whether c_robust provides much value apart from more low level control to the ANMS algorithm. I didn't find much of a jump between 
+        c_robus = 0.9 and c_robust = 1. Perhaps in a high volume, low radius use case for feature control, but not very apparent here.
+    </p>
 
     <h2> Step 2: Extracting a feature descriptor for each feature point </h2>
     <table>
         <tr>
             <td>
-                <img src="./media/building-1-feature.png" width="300px" height="auto"/>
-                <p> Color Map Gray </p>
+                <img src="./media/out-1-feature.png" width="300px" height="auto"/>
             </td>
             <td>
-                <img src="./media/building-2-feature.png" width="300px" height="auto"/>
-                <p> Color Map Gray </p>
+                <img src="./media/out-2-feature.png" width="300px" height="auto"/>
             </td>
             <td>
-                <img src="./media/building-3-feature.png" width="300px" height="auto"/>
-                <p> Color Map Gray </p>
+                <img src="./media/out-3-feature.png" width="300px" height="auto"/>
             </td>
         </tr>
         <tr>
             <td>
                 <img src="./media/room-1-feature.png" width="300px" height="auto"/>
-                <p> Color Map Standard </p>
             </td>
             <td>
                 <img src="./media/room-2-feature.png" width="300px" height="auto"/>
-                <p> Color Map Standard </p>
             </td>
             <td>
                 <img src="./media/room-3-feature.png" width="300px" height="auto"/>
-                <p> Color Map Standard </p>
             </td>
         </tr>
     </table>
+
+
+    <p> Here, I've dropped some features from the three mosaic images I've compiled. In my feature extraction algorithm, I only considered a single channel versus doing a 
+        grayscale or using all three channels. I intended to explore this, and discovered that some of my office hour peers who did end up implementing it with RGB (and with a blur, in some cases), didn't 
+        have much of a difference in results.
+    </p>
 
 
     <h2> Step 3: Matching these feature descriptors between two images </h2>
@@ -323,6 +333,7 @@
         <tr>
         </tr>
     </table>
+    <p> Feature matching was more brutally challenging in finding the right parameters to even verify that the feature rejection algorithm was working. I found <a href="https://stackoverflow.com/questions/51197091/how-does-the-lowes-ratio-test-work"> on Stack Overflow </a> to use a Lowe's test ratio of around 0.8, but previous tests with 0.9 and 0.5 proved how differently accurate the results are when playing around with the rejection algorithm. I would say this "part of the pipeline" is easily the most relevant place to tune out of everything else. </p>
 
     <h2> Part 4: Blend images into Mosaics </h2>
     <p> Automated evaluation results. </p>
@@ -360,7 +371,29 @@
         </tr>
     </table>
 
+    <p> In many of the images I ran (but didn't show, for the sake of not pelting you with Mosaics), there was fair evidence to suggest that the automated algorithm provided similar output image wise to the manual stitching. Does that mean that 
+        homography, in it's infinite wisdom, is really a path to eyes, and thus the soul? I'll let you judge that. However, I did want to address the defects in the second image. 
+    </p>
 
+    <p>
+        I've released the output from the automatically generated and manual homography matrices, and you'll see that they are, in areas that aren't infinitesimily small, often pretty close. In the actual image output, I noticed that 
+        the correspondences for the auto evaluation were all clumped together. I wonder if this had an impact on the results. Perhaps, some sort of ANMS-like constraint on the points could help 
+        "diversify" point selection.
+    </p>
+
+    <pre>
+        Automated Homography Output 
+
+         [[ 1.02899160e+00 -3.90214904e-02 -1.73343621e+02]
+        [ 1.17673126e-01  9.05355364e-01  4.56263037e+01]
+        [ 2.69092517e-04 -2.54452027e-05  1.00000000e+00]]
+
+        Manual: 
+
+        [[9.86346584e-01, -1.82851454e-02, -1.68131906e+02],
+       [ 1.62502069e-01,  8.89696396e-01,  4.10011998e+01],
+       [ 3.42539046e-04, -6.88466711e-05,  1.00000000e+00]]
+    </pre>
 
 </body>
 </html>
