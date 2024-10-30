@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            table-layout: fixed;
+        }
+        td {
+            text-align: center;
+            vertical-align: top;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            overflow-x: auto;
+        }
+        img {
+            max-width: 1200px;
+            max-height: 1200px;
+        } 
+    </style>
+    <title> CS 180 - Project 4 Part A & B </title>
+</head>
+<body>
+    <h1> Project 4 - Auto-Stitching Photo Mosaics </h1>
+    <p> First, a bit of a repeat from part A ... if you're making a beeline for the automatically generated images, scroll down to the bottom, Part 6! </p>
+    <h2> Part 1: Shoot the Pictures: </h2>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/IMG_2186.png" />
+            </td>
+            <td>
+                <img src="./media/IMG_2187.png" />
+            </td>
+            <td>
+                <img src="./media/IMG_2188.png" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/IMG_2189.png" />
+            </td>
+            <td>
+                <img src="./media/IMG_2193.png" />
+            </td>
+            <td>
+                <img src="./media/IMG_2194.png" />
+            </td>
+
+        </tr>
+    </table>
+
+    <h2> Part 2: Compute Homographies </h2>
+    <pre>
+        def computeH(pts_src, pts_dest): 
+            A = []
+            for (x_s, y_s), (x_d, y_d) in zip(pts_src, pts_dest):
+                A.append([x_s, y_s, 1, 0, 0, 0, -x_d * x_s, -x_d * y_s]) 
+                A.append([0, 0, 0, x_s, y_s, 1, -y_d * x_s, -y_d * y_s]) 
+
+            # Convert to numpy linear equation 
+            A = np.array(A)
+            b = pts_dest.reshape(-1, 1)
+
+            H = (np.linalg.pinv(A.T @ A) @ A.T @ b)
+            return np.vstack((H, 1)).reshape(3, 3) 
+    </pre>
+
+    <h2> Part 3: Warp the Images </h2>
+    <pre>
+        def warpImage(im, im_pts, H, output_shape=None):
+            h, w = im.shape[:2]
+            corners = np.array([[0, 0], [w-1, 0], [w-1, h-1], [0, h-1]])
+            ones = np.ones((4, 1))
+            corners_h = np.hstack([corners, ones])
+            
+            warped_corners = (H @ corners_h.T).T
+            warped_corners /= warped_corners[:, [2]]  # Normalize by z
+
+            min_x, min_y = np.min(warped_corners[:, :2], axis=0)
+            max_x, max_y = np.max(warped_corners[:, :2], axis=0)
+
+            if output_shape is None:
+                output_shape = (int(np.ceil(max_y - min_y)), int(np.ceil(max_x - min_x)))
+
+            xx, yy = np.meshgrid(np.arange(-output_shape[1], output_shape[1]), np.arange(-output_shape[0], output_shape[0]))
+            xx_out, yy_out = np.meshgrid(np.arange(0, output_shape[1]), np.arange(0, output_shape[0]))
+            
+            out_homog_coords = np.stack([xx.ravel(), yy.ravel(), np.ones_like(xx).ravel()], axis=1)
+            translation_matrix = np.array([[1, 0, -min_x],
+                                        [0, 1, -min_y],
+                                        [0, 0, 1]])
+            H_inv = np.linalg.inv(translation_matrix @ H)
+
+            
+            mapped_coords = (H_inv @ out_homog_coords.T).T
+
+            mapped_coords /= mapped_coords[:, [2]]  # Normalize by z
+            x_mapped = mapped_coords[:, 0]
+            y_mapped = mapped_coords[:, 1]
+
+            new_coords_x = xx.ravel()
+            new_coords_y = yy.ravel() 
+
+            valid_mask = (x_mapped >= 0) & (x_mapped < w) & (y_mapped >= 0) & (y_mapped < h)
+
+            im_warped = np.zeros((output_shape[0], output_shape[1], im.shape[2]), dtype=im.dtype)  # Create blank output
+            for i in range(im.shape[2]):  # Interpolate each channel
+                im_warped_channel = scipy.interpolate.griddata(
+                    (new_coords_y[valid_mask], new_coords_x[valid_mask]),  # input coordinates (valid only)
+                    im[y_mapped[valid_mask].astype(int), x_mapped[valid_mask].astype(int), i],  # input values
+                    (yy_out, xx_out),                                      # output grid
+                    method='linear',
+                    fill_value=0                                   # Fill out-of-bound pixels with 0
+                )
+
+                im_warped[:, :, i] = im_warped_channel
+            
+
+            orig_points_homogeneous = np.hstack((im_pts, np.ones((im_pts.shape[0], 1))))
+
+            transformed_points = ((translation_matrix @ H) @ orig_points_homogeneous.T).T
+
+            transformed_points /= transformed_points[:, 2].reshape(-1, 1)  # Normalize to get (x, y)
+
+            return im_warped, translation_matrix, transformed_points[:, :2]
+    </pre>
+
+    <h2> Part 4: Image Rectification </h2>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/rect_image.png" width="300px" height="auto" />
+                <p> Original </p>
+            </td>
+            <td>
+                <img src="./media/labeled_points_cushion.png" width="300px" height="auto" />
+                <p> Labeled </p>
+            </td>
+            <td>
+                <img src="./media/rectified.png" width="300px" height="auto"/>
+                <p> Rectified </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/IMG_2187.png" width="300px" height="auto" />
+                <p> An Interesting Rectification (Original) </p>
+            </td>
+
+            <td>
+                <img src="./media/labeled_turtle.png" width="300px" height="auto" />
+                <p> Perspective Warp </p>
+            </td>
+
+            <td>
+                <img src="./media/turtle_rectified.png" width="300px" height="auto" />
+                <p> Perspective Warp </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/IMG_2194.png" width="300px" height="auto" />
+                <p> An Interesting Rectification (Original) </p>
+            </td>
+
+            <td>
+                <img src="./media/paper_rectification_label.png" width="300px" height="auto" />
+                <p> Perspective Warp </p>
+            </td>
+
+            <td>
+                <img src="./media/paper_rectified.png" width="300px" height="auto" />
+                <p> Perspective Warp </p>
+            </td>
+            
+        </tr>
+    </table>
+
+    <p> <strong> Check out the FIRST for the most "square"-ish object. All images were warped to the same four key points - [[100, 200], [300, 200],  [300, 400], [100, 400]]. </strong>The rectified image wasn't initially looking like this. The changes I needed to make were to (1) rotate the image, and then (2) crop it down to remove excess black. </p>
+
+    <h2> Part 5: Blend the images into a mosaic </h2>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/IMG_2214.png" width="300px" height="auto" />
+                <p> Image 1 </p>
+            </td>
+            <td>
+                <img src="./media/IMG_2215.png" width="300px" height="auto"/>
+                <p> Image 2 </p>
+            </td>
+            <td>
+                <img src="./media/mosaic_room.png" width="300px" height="auto"/>
+                <p> Mosaic </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/IMG_2216.png" width="300px" height="auto" />
+                <p> Image 1 </p>
+            </td>
+            <td>
+                <img src="./media/IMG_2217.png" width="300px" height="auto"/>
+                <p> Image 2 </p>
+            </td>
+            <td>
+                <img src="./media/out_mosaic.png" width="300px" height="auto"/>
+                <p> Mosaic </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/IMG_2220.png" width="300px" height="auto" />
+                <p> Image 1 </p>
+            </td>
+            <td>
+                <img src="./media/IMG_2221.png" width="300px" height="auto"/>
+                <p> Image 2 </p>
+            </td>
+            <td>
+                <img src="./media/mosaic_building.png" width="300px" height="auto"/>
+                <p> Mosaic </p>
+            </td>
+        </tr>
+    </table>
+
+    <p> <strong> Learnings: </strong> Sometimes, sticking to the simplest method is the easiest. The mosaics took an extremely long time, as I tried to find extremely 
+    elaborate ways of improving image quality. Little did I realize that simply doing a weighted average over the intersection would suffice to provide the biggest jump in 
+    performance. Don't oversolve a problem unless required. </p>
+
+    <h2> Project Part 4B </h2>
+
+    <h2> Step 1: Detecting corner features in an image </h2>
+
+    <table>
+        <tr>
+            <td>
+                <img src="./media/room-anms.png" width="300px" height="auto"/>
+                <p> ANMS output between images. </p>
+            </td>
+            <td>
+                <img src="./media/out_mosaic-anms-1.png" width="300px" height="auto"/>
+                <p> ANMS output between images. </p>
+            </td>
+            <td>
+                <img src="./media/out_mosaic-anms-2.png" width="300px" height="auto"/>
+                <p> ANMS output between images. </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/building-anms.png" width="300px" height="auto"/>
+                <p> ANMS output between images. </p>
+            </td>
+            <td>
+                <img src="./media/building-2-anms.png" width="300px" height="auto"/>
+                <p> ANMS output between images. </p>
+            </td>
+        </tr>
+    </table>
+
+    <h2> Step 2: Extracting a feature descriptor for each feature point </h2>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/building-1-feature.png" width="300px" height="auto"/>
+                <p> Color Map Gray </p>
+            </td>
+            <td>
+                <img src="./media/building-2-feature.png" width="300px" height="auto"/>
+                <p> Color Map Gray </p>
+            </td>
+            <td>
+                <img src="./media/building-3-feature.png" width="300px" height="auto"/>
+                <p> Color Map Gray </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/room-1-feature.png" width="300px" height="auto"/>
+                <p> Color Map Standard </p>
+            </td>
+            <td>
+                <img src="./media/room-2-feature.png" width="300px" height="auto"/>
+                <p> Color Map Standard </p>
+            </td>
+            <td>
+                <img src="./media/room-3-feature.png" width="300px" height="auto"/>
+                <p> Color Map Standard </p>
+            </td>
+        </tr>
+    </table>
+
+
+    <h2> Step 3: Matching these feature descriptors between two images </h2>
+    <p> Note that two points from different images with the same color refer to corresponding points. </p>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/room-correspondences.png" width="600px" height="auto"/>
+                <p> Correspondences between the two images in the room. </p>
+            </td>
+
+            <td>
+                <img src="./media/building-correspondence.png" width="600px" height="auto"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/out_mosaic-correspondences.png" width="600px" height="auto"/>
+            </td>
+        </tr>
+        <tr>
+        </tr>
+    </table>
+
+    <h2> Part 4: Blend images into Mosaics </h2>
+    <p> Automated evaluation results. </p>
+
+    <table>
+        <tr>
+            <td>
+                <img src="./media/out_mosaic_room.png" width="300px" height="auto"/>
+                <p> Manual Annotation </p>
+            </td>
+            <td>
+                <img src="./media/out_mosaic_room_annotated.png" width="300px" height="auto"/>
+                <p> Automatic Annotation</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/out_mosaic_manual2.png" width="300px" height="auto"/>
+                <p> Manual Annotation </p>
+            </td>
+            <td>
+                <img src="./media/out_mosaic_annotated.png" width="300px" height="auto"/>
+                <p> Automatic Annotation</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/out_mosaic_manual_building2.png" width="300px" height="auto"/>
+                <p> Manual Annotation </p>
+            </td>
+            <td>
+                <img src="./media/out_halloween_auto.png" width="300px" height="auto"/>
+                <p> Automatic Annotation</p>
+            </td>
+        </tr>
+    </table>
+
+
+
+</body>
+</html>
