@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            table-layout: fixed;
+        }
+        td {
+            text-align: center;
+            vertical-align: top;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            overflow-x: auto;
+        }
+        img {
+            max-width: 1200px;
+            max-height: 1200px;
+        } 
+
+        h1, h2, h3, h4 {
+            text-align: center;
+        }
+    </style>
+    <title> CS 180 - Project 5 Part B </title>
+</head>
+<body>
+    <h1> Project 5 - Fun with diffusion models </h1>
+
+    <h3> 1.1 Implementing the UNet </h3>
+    <p> For this part, I ended up training a denoising neural network. I display results in the next couple parts as requested. </p>
+
+    <h3> 1.2 Using the UNet to Train a Denoiser </h3>
+
+    <p> Listed below is a visualization showing how a higher sigma visually affects the images </p>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/noise_visualization_part_b.png" height="auto"/>  
+            </td>
+        </tr>
+    </table>
+
+    <h3> 1.2.1 Using the UNet to Train a Denoiser </h3>
+    <p> The denoising UNet was trained for 5 epochs, with a hidden dimension D of 128 and sigma = 0.5. </p>
+
+    <table>
+        <tr>
+            <td>
+                <p>  Results after epoch 1 completed  </p>
+                <img src="./media/denoising_part_1_epoch1_results.png" height="auto"/>  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p>  Results after epoch 5 is completed  </p>
+                <img src="./media/denoising_part_1_epoch5_results.png" height="auto"/>  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p>  Final Training Loss vs Step curve </p>
+                <img src="./media/part1_training_loss_cuve.png" height="auto"/>  
+            </td>
+        </tr>
+    </table>
+
+    <h3> 1.2.2 Out-of-Distribution Testing </h3>
+    <p> Results shown for sigma values 0, 0.2, 0.4, 0.5, 0.6, 0.8, and 1.0 are shown below </p>
+    <table>
+        <tr>
+            <td>
+                <p> Sigma = 0 </p>
+                <img src="./media/digit_sigma_0.png" width="150px" height="auto"/>  
+            </td>
+            <td>
+                <p> Sigma = 0.2 </p>
+                <img src="./media/digit_sigma_0_2.png" width="150px" height="auto"/>  
+            </td>
+            <td>
+                <p> Sigma = 0.4 </p>
+                <img src="./media/digit_sigma_0_4.png" width="150px" height="auto"/>  
+            </td>
+            <td>
+                <p> Sigma = 0.5 </p>
+                <img src="./media/digit_sigma_0_5.png" width="150px" height="auto"/>  
+            </td>
+            <td>
+                <p> Sigma = 0.6 </p>
+                <img src="./media/digit_sigma_0_6.png" width="150px" height="auto"/>  
+            </td>
+            <td>
+                <p> Sigma = 0.8 </p>
+                <img src="./media/digit_sigma_0_8.png" width="150px" height="auto"/>  
+            </td>
+            <td>
+                <p> Sigma = 1.0 </p>
+                <img src="./media/digit_sigma_1_0.png" width="150px" height="auto"/>  
+            </td>
+        </tr>
+    </table>
+
+    <h2> Part 2 - Training a diffusion model </h2>
+    <h3> 2.1 - Adding Time Conditioning to UNet </h3>
+
+    <p> Made FCBlock ... and spent a good bit debugging it. </p>
+
+    <h3> 2.2 + 2.3 - Training and Sampling the Time Conditioning UNet </h3>
+    <h4> 5 Epoch Training Results </h4>
+    <table>
+        <tr>
+            <td>
+                <p> Visualization of data on the 5th epoch</p>
+                <img src="./media/denoising_part_2_epoch_run5_e5_results.png" />  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p> Training run loss curve</p>
+                <img src="./media/denoising_part_2_epoch_run5_e5_training.png" width="350px" height="auto"/>  
+            </td>
+        </tr>
+    </table>
+
+    <h4> 20 Epoch Training Results </h4>
+    <table>
+        <tr>
+            <td>
+                <p> Visualization of data denoised during on the 5th epoch</p>
+                <img src="./media/denoising_part_2_epoch_run20_e5_results.png" />  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p> Visualization of data sampled from scratch during on the 5th epoch</p>
+                <img src="./media/time_conditioned_epoch_5_sample.png" height="125px" width="auto" />  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p> Visualization of data denoised on the 20th epoch</p>
+                <img src="./media/denoising_part_2_epoch_run20_e20_results.png" />  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p> Visualization of data sampled from scratch during on the 20th epoch</p>
+                <img src="./media/time_conditioned_epoch_20_sample.png" height="125px" width="auto" />  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p> Training run loss curve</p>
+                <img src="./media/denoising_part_2_epoch_run20_e20_training.png" width="350px" height="auto"/>  
+            </td>
+        </tr>
+    </table>
+
+    <h2> Adding Class Conditioning </h2>
+    <h3> 2.4 - Integrating Class Conditioning to Unet </h3>
+    <p> [TODO] - better description Made FCBlock ... and spent a good bit debugging it. </p>
+
+    <h4> 5 Epoch Training Results </h4>
+    <table>
+        <tr>
+            <td>
+                <p> Visualization of data on the 5th epoch</p>
+                <img src="./media/denoising_part_3_epoch_run5_e5_results.png" />  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p> Visualization of data generated after the end of the 5th epoch</p>
+                <img src="./media/class_conditioned_epoch_5_sample_run5.png" />  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p> Training run loss curve</p>
+                <img src="./media/denoising_part_3_epoch_run5_e5_training.png" width="350px" height="auto"/>  
+            </td>
+        </tr>
+    </table>
+
+    <h4> 20 Epoch Training Results </h4>
+    <table>
+        <tr>
+            <td>
+                <p> Visualization of data denoised during on the 5th epoch</p>
+                <img src="./media/denoising_part_3_epoch_run20_e5_results.png" />  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p> Visualization of data sampled from scratch during on the 5th epoch</p>
+                <img src="./media/class_conditioned_epoch_5_sample.png" height="125px" width="auto" />  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p> Visualization of data denoised on the 20th epoch</p>
+                <img src="./media/denoising_part_3_epoch_run20_e20_results.png" />  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p> Visualization of data sampled from scratch during on the 20th epoch</p>
+                <img src="./media/class_conditioned_epoch_20_sample.png" height="125px" width="auto" />  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p> Training run loss curve</p>
+                <img src="./media/denoising_part_3_epoch_run20_e20_training.png" width="350px" height="auto"/>  
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

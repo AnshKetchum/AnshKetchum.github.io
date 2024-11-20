@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            table-layout: fixed;
+        }
+        td {
+            text-align: center;
+            vertical-align: top;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            overflow-x: auto;
+        }
+        img {
+            max-width: 1200px;
+            max-height: 1200px;
+        } 
+    </style>
+    <title> CS 180 - Project 5 Part A </title>
+</head>
+<body>
+    <h1> Project 5 - Fun with diffusion models </h1>
+    <p> Note, this page only contains part A. To see part b, go <a href="../b/index.html"> here </a>. </p>
+
+
+    <h2> Part 0 </h2>
+
+    <p> With a <strong> seed value: 189 </strong>, here is a list of the prompts we were tasked to try: </p>
+    <ol>
+        <li> an oil painting of a snowy mountain village </li>
+        <li> a man wearing a hat </li>
+        <li> a rocket ship </li>
+    </ol>
+    
+    <table>
+        <tr>
+            <td>
+                <strong> num_inference = 20 Results </strong>
+            </td>
+            <td>
+                <img src="./media/snow-up.png" height="auto"/>
+                <p> an oil painting of a snowy mountain village </p>
+            </td>
+            <td>
+                <img src="./media/hat-up.png" height="auto"/>
+                <p> a man wearing a hat </p>
+            </td>
+            <td>
+                <img src="./media/rocket-up.png"  height="auto"/>
+                <p> a rocket ship</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <strong> num_inference = 40 Results </strong>
+            </td>
+            <td>
+                <img src="./media/snow-2-up.png" height="auto"/>
+                <p> an oil painting of a snowy mountain village </p>
+            </td>
+            <td>
+                <img src="./media/hat-2-up.png" height="auto"/>
+                <p> a man wearing a hat </p>
+            </td>
+            <td>
+                <img src="./media/rocket-2-up.png"  height="auto"/>
+                <p> a rocket ship</p>
+            </td>
+        </tr>
+    </table>
+
+    <p> For each of the three prompts (listed above), the model and upsampled output is shown in the table, alongside the num_inference values. One thing that pops out immedietly about the model selected in question 
+        is that there is <i> clear diversity </i>in the training data distribution. We can see that the man is black, and is very characterized in his formal suit and shirt underneath. The model is also notably good at creating human faces without common 
+        misgivings related to humans such as - disfiguring or lack of detail in the eyes (though squinting further down, the eyes are a bit off), a clearly gray professional background, and ears that look humanlike. 
+    </p>
+    <p>
+        In the case of the other two images, they embody a broad varienty of styles, which again reflects the data diversity DeepFloyd had access to.
+    </p>
+    <p>
+        We can compare these with the images generated with parameter num_inference = 40 to see more fine grained details (which would make sense with additional denoising steps). In the case of the man with the hat prompt, we see more complex backgrounds, such as a glimmer of a shadow, and better eye placement. In the other two, we see less blurred lines (see tree), and more of the stylistic theme 
+        included in the prompt such as oil painting. Notice that in part 3, the lack of a stylistic prompt enables the diffusion model to choose the style it pleases.
+    </p>
+
+    <h2> Part 1.1 - Implementing the Forward Process </h2>
+    <table>
+        <tr>
+            <td>
+                <strong> Forward Pass of Diffusion Model, noise at various timesteps </strong>
+            </td>
+            <td>
+                <img src="./media/noise_0.png" width="150"height="auto"/>
+                <p> t = 0 </p>
+            </td>
+            <td>
+                <img src="./media/noise_250.png" width="150"height="auto"/>
+                <p> t = 250 </p>
+            </td>
+            <td>
+                <img src="./media/noise_500.png" width="150" height="auto"/>
+                <p> t = 500 </p>
+            </td>
+            <td>
+                <img src="./media/noise_750.png"width="150"  height="auto"/>
+                <p> t = 750 </p>
+            </td>
+            <td>
+                <img src="./media/noise_999.png"width="150"  height="auto"/>
+                <p> t = 999 </p>
+            </td>
+        </tr>
+    </table>
+    <p> The key things to notice here was the organization of timesteps. t = 0 contains the least noise, while t = T - 1 = 999 contains the most, and also is the last step in the forward process (the first step in the backward, or denoising process). The progression 
+        of noise is dictated an alpha_cumprods variable, listing the products of the values from the series of timesteps. </p>
+
+    <h2> Part 1.2 - Classical Denoising </h2>
+    <table>
+        <tr>
+            <td>
+                <strong> Gaussian Denoising </strong>
+            </td>
+            <td>
+                <img src="./media/blur_0.png" width="150" height="auto"/>
+                <p> t = 0 </p>
+            </td>
+            <td>
+                <img src="./media/blur_250.png" width="150"height="auto"/>
+                <p> t = 250 </p>
+            </td>
+            <td>
+                <img src="./media/blur_500.png"width="150"  height="auto"/>
+                <p> t = 500 </p>
+            </td>
+            <td>
+                <img src="./media/blur_750.png"width="150"  height="auto"/>
+                <p> t = 750 </p>
+            </td>
+            <td>
+                <img src="./media/blur_999.png"width="150"  height="auto"/>
+                <p> t = 999 </p>
+            </td>
+        </tr>
+    </table>
+    <p> Gaussian denoising isn't very effective. Look at t = 250 for an example; even when the amount of noise is comparatively minimal, the low pass filter, aka "classical denoising" isn't able to precisely 
+        erase the noise. We see this problem mounting for more noise infested images. By the time we get to t = 999, we aren't very surprised at the minimal impact of classical denoising.
+    </p>
+
+    <h2> 1.3 - One Step Denoising </h2>
+    <table>
+        <tr>
+            <td>
+                <p> Original Image </p>
+                <img src="./media/noise_0.png" height="150" width="auto" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <strong> Noisy Images </strong>
+            </td>
+            <td>
+                <img src="./media/noise_250.png" height="150" width="auto"/>
+                <p> t = 250 </p>
+            </td>
+            <td>
+                <img src="./media/noise_500.png" height="150" width="auto"/>
+                <p> t = 500 </p>
+            </td>
+            <td>
+                <img src="./media/noise_750.png" height="150" width="auto"/>
+                <p> t = 750 </p>
+            </td>
+            <td>
+                <img src="./media/noise_999.png" height="150" width="auto"/>
+                <p> t = 999</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <strong> One Step Estimate </strong>
+            </td>
+            <td>
+                <img src="./media/one_step_250.png" height="150" width="auto"/>
+                <p> t = 250 </p>
+            </td>
+            <td>
+                <img src="./media/one_step_500.png" height="150" width="auto"/>
+                <p> t = 500 </p>
+            </td>
+            <td>
+                <img src="./media/one_step_750.png" height="150" width="auto"/>
+                <p> t = 750 </p>
+            </td>
+            <td>
+                <img src="./media/one_step_999.png" height="150" width="auto"/>
+                <p> t = 999</p>
+            </td>
+        </tr>
+    </table>
+    <p> The one-step method does work significantly better than classical, but needs to take baby steps. If we feed it too much noise, like in t = 999, one-step denoising will not be able to 
+        erase all of the noise injected.
+    </p>
+
+    <h2> 1.4 - Iterative Denoising </h2>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/one_step_500.png" height="150" width="auto"/>
+                <strong> Previous, one step denoising </strong>
+                <p> t = 500 </p>
+            </td>
+            <td>
+                <img src="./media/blur_500.png" height="150" width="auto"/>
+                <strong> Previous, classical denoising </strong>
+                <p> t = 500 </p>
+            </td>
+        </tr>
+    </table>
+
+    <table>
+        <tr>
+            <td>
+                <strong> Iterative Denoising </strong>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/iterative_690.png" height="150" width="auto"/>
+                <p> t = 690 </p>
+            </td>
+            <td>
+                <img src="./media/iterative_540.png" height="150" width="auto"/>
+                <p> t = 540 </p>
+            </td>
+            <td>
+                <img src="./media/iterative_390.png" height="150" width="auto"/>
+                <p> t = 390 </p>
+            </td>
+            <td>
+                <img src="./media/iterative_240.png" height="150" width="auto"/>
+                <p> t = 240 </p>
+            </td>
+            <td>
+                <img src="./media/iterative_90.png" height="150" width="auto"/>
+                <p> t = 90 </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="./media/iterative_final.png" height="150" width="auto"/>
+                <p> Final </p>
+            </td>
+            <td>
+                <img src="./media/iterative_final2.png" height="150" width="auto"/>
+                <p> Another seperate final </p>
+            </td>
+        </tr>
+    </table>
+    <p> We split the denoising steps into more "strided" timesteps for efficiency, with a step size of -30. Every 5th loop, we visualize the image (which is what you are seeing, albeit moreso related to multiples of 30). For the specific run here,
+        we set i_start = 10. We have already provided the image with information through a prior test image, so not much of a need to force the model to delve down the same rabbit hole. In comparison to the classical denoising, we see that the denoising process performs significantly better, 
+        and is able to "hallucinate" new data. In comparison to the one step estimate, the improvements are not so overt from the iterative denoising; however the additional control offered has the opportunity to provide accessibility for low compute budgets.
+    </p>
+
+    <h2> 1.5 - Sampling Images </h2>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/sampled_1.png" height="150" width="auto"/>
+                <p> Sample 1 </p>
+            </td>
+            <td>
+                <img src="./media/sampled_2.png" height="150" width="auto"/>
+                <p> Sample 2 </p>
+            </td>
+            <td>
+                <img src="./media/sampled_3.png" height="150" width="auto"/>
+                <p> Sample 3 </p>
+            </td>
+            <td>
+                <img src="./media/sampled_4.png" height="150" width="auto"/>
+                <p> Sample 4 </p>
+            </td>
+            <td>
+                <img src="./media/sampled_5.png" height="150" width="auto"/>
+                <p> Sample 5 </p>
+            </td>
+        </tr>
+    </table>
+    <p> Quality isn't the best for the images. They go all over place, and aren't as remarkably well designed as an iterative denoising with classifier free guidance support. </p>
+
+    <h2> 1.6 - Classifier Free Guidance </h2>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/cfg_sample_1.png" height="150" width="auto"/>
+                <p> Sample 1 </p>
+            </td>
+            <td>
+                <img src="./media/cfg_sample_2.png" height="150" width="auto"/>
+                <p> Sample 2 </p>
+            </td>
+            <td>
+                <img src="./media/cfg_sample_3.png" height="150" width="auto"/>
+                <p> Sample 3 </p>
+            </td>
+            <td>
+                <img src="./media/cfg_sample_4.png" height="150" width="auto"/>
+                <p> Sample 4 </p>
+            </td>
+            <td>
+                <img src="./media/cfg_sample_5.png" height="150" width="auto"/>
+                <p> Sample 5 </p>
+            </td>
+        </tr>
+    </table>
+    <p> We share some output, where we can control the alignment of the diffusion model by adjusting the scale value to skew the model towards or farther from the desired concept. In our case, 
+        we set CFG = 7, and generated 5 images with the conditional prompt being "a high quality photo".
+    </p>
+
+    <h2> 1.7 - Image to Image Translation </h2>
+    <table>
+        <tr>
+            <td>
+                Sample test image
+            </td>
+            <td>
+                <img src="./media/sd_edit_1.png" height="150" width="auto"/>
+                <p> Sample 1 - i_start = 1</p>
+            </td>
+            <td>
+                <img src="./media/sd_edit_3.png" height="150" width="auto"/>
+                <p> Sample 2 - i_start = 3 </p>
+            </td>
+            <td>
+                <img src="./media/sd_edit_5.png" height="150" width="auto"/>
+                <p> Sample 3 - i_start = 5 </p>
+            </td>
+            <td>
+                <img src="./media/sd_edit_7.png" height="150" width="auto"/>
+                <p> Sample 4 - i_start = 7 </p>
+            </td>
+            <td>
+                <img src="./media/sd_edit_10.png" height="150" width="auto"/>
+                <p> Sample 5 - i_start = 10 </p>
+            </td>
+            <td>
+                <img src="./media/sd_edit_20.png" height="150" width="auto"/>
+                <p> Sample 6 - i_start = 20 </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Custom image 1 - Mega Charizard X
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_i1.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_i2.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_i3.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_i4.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_i5.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_1.png" height="150" width="auto"/>
+                <p> Actual Sample </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Custom image 2 - Appa from Avatar
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_j1.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_j2.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_j3.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_j4.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_j5.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/sd_edit_self_j6.png" height="150" width="auto"/>
+            </td>
+
+            <td>
+                <img src="./media/sd_edit_self_3.png" height="150" width="auto"/>
+                <p> Actual Sample </p>
+            </td>
+        </tr>
+    </table>
+
+    <h2> 1.7.1 - Editing Hand Drawn and Web Images </h2>
+    <table>
+        <tr>
+            <td>
+                Custom image 2 - Web Drawn Test Image 
+            </td>
+            <td>
+                <img src="./media/web_sd_edit_a1.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/web_sd_edit_a2.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/web_sd_edit_a3.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/web_sd_edit_a4.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/web_sd_edit_a5.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/web_sd_edit_a6.png" height="150" width="auto"/>
+            </td>
+
+            <td>
+                <img src="./media/web_sd_edit_a0.png" height="150" width="auto"/>
+                <p> Actual Sample </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Colab Interface Drawn Test Image 
+            </td>
+            <td>
+                <img src="./media/drawn_image_1_2.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/drawn_image_1_3.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/drawn_image_1_4.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/drawn_image_1_5.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/drawn_image_1_6.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/drawn_image_1_7.png" height="150" width="auto"/>
+            </td>
+
+            <td>
+                <img src="./media/drawn_image_1.png" height="150" width="auto"/>
+                <p> Actual Sample </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Illustrator Drawn Test Image 
+            </td>
+            <td>
+                <img src="./media/illustrator_image_1.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/illustrator_image_2.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/illustrator_image_3.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/illustrator_image_4.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/illustrator_image_5.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/illustrator_image_6.png" height="150" width="auto"/>
+            </td>
+
+            <td>
+                <img src="./media/illustrator_image.png" height="150" width="auto"/>
+                <p> Actual Sample </p>
+            </td>
+        </tr>
+    </table>
+
+    <h2> 1.7.2 - Inpainting </h2>
+    <table>
+        <tr>
+            <td>
+                Avocado
+            </td>
+            <td>
+                <img src="./media/mask_1.png" height="150" width="auto"/>
+                <p> Mask </p>
+            </td>
+            <td>
+                <img src="./media/replace_1.png" height="150" width="auto"/>
+                <p> Data To replace </p>
+            </td>
+            <td>
+                <img src="./media/web_sd_edit_a0.png" height="150" width="auto"/>
+                <p> Original Sample </p>
+            </td>
+            <td>
+                <img src="./media/mask_rep_1.png" height="150" width="auto"/>
+                <p> Replaced Sample</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Professor Efros Headshot
+            </td>
+            <td>
+                <img src="./media/efros-mask.png" height="150" width="auto"/>
+                <p> Mask </p>
+            </td>
+            <td>
+                <img src="./media/efros-replace.png" height="150" width="auto"/>
+                <p> Data To replace </p>
+            </td>
+            <td>
+                <img src="./media/efros.png" height="150" width="auto"/>
+                <p> Original Sample </p>
+            </td>
+            <td>
+                <img src="./media/efros-final.png" height="150" width="auto"/>
+                <p> Replaced Sample</p>
+            </td>
+        </tr>
+
+
+    </table>
+
+    <h2> 1.7.3 Text Conditioned Image to Image Translation </h2>
+    <table>
+        <tr>
+            <td>
+                Sample Provided Test Image
+            </td>
+            <td>
+                <img src="./media/text_conditioned_1.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_3.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_5.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_7.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_10.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_20.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/campanile.jpg" height="150" width="auto"/>
+                <p> Actual </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Illustrator Image 
+            </td>
+            <td>
+                <img src="./media/text_conditioned_illustrator_1.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_illustrator_3.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_illustrator_5.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_illustrator_7.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_illustrator_10.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_illustrator_20.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/illustrator_image.png" height="150" width="auto"/>
+                <p> Actual </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Hand Drawn Image 
+            </td>
+            <td>
+                <img src="./media/text_conditioned_drawn_1.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_drawn_3.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_drawn_5.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_drawn_7.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_drawn_10.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/text_conditioned_drawn_20.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/drawn_image_1.png" height="150" width="auto"/>
+                <p> Actual </p>
+            </td>
+        </tr>
+    </table>
+
+    <h2> 1.8 Visual Anagrams </h2>
+    <table>
+        <tr>
+            <td>
+                Sample Requested
+            </td>
+            <td>
+                <img src="./media/anagram_1_example_up.png" height="150" width="auto"/>
+                <p> an oil painting of people around a campfire </p>
+            </td>
+            <td>
+                <img src="./media/anagram_1_example_flipped.png" height="150" width="auto"/>
+                <p> an oil painting of an old man</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+               Custom Anagram 1 
+            </td>
+            <td>
+                <img src="./media/anagram_2_example_up.png" height="150" width="auto"/>
+                <p> an oil painting of a snowy mountain village </p>
+            </td>
+            <td>
+                <img src="./media/anagram_2_example_flipped.png" height="150" width="auto"/>
+                <p> an oil painting of the amalfi "cost" </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+               Custom Anagram 2 
+            </td>
+            <td>
+                <img src="./media/anagram_2_example_up.png" height="150" width="auto"/>
+                <p> an oil painting of a snowy mountain village </p>
+            </td>
+            <td>
+                <img src="./media/anagram_2_example_flipped.png" height="150" width="auto"/>
+                <p> an oil painting of the amalfi "cost" </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+               Custom Anagram 3 
+            </td>
+            <td>
+                <img src="./media/anagram_3_example_up.png" height="150" width="auto"/>
+                <p> a pencil </p>
+            </td>
+            <td>
+                <img src="./media/anagram_3_example_flipped.png" height="150" width="auto"/>
+                <p> a rockete ship </p>
+            </td>
+        </tr>
+    </table>
+
+    <h2> 1.9 Visual Anagrams </h2>
+    <table>
+        <tr>
+            <td>
+                <img src="./media/hybrid_photo_up.png" height="150" width="auto"/>
+                <p> waterfall close up, skull far away </p>
+            </td>
+            <td>
+                <img src="./media/hybrid_photo_up2.png" height="150" width="auto"/>
+                <p> a photograph of a dog, a lithograph of a waterfall </p>
+
+
+                <p> To see the dog, check this low frequency image </p>
+                <img src="./media/hybrid_photo_up2_support.png" height="150" width="auto"/>
+            </td>
+            <td>
+                <img src="./media/hybrid_photo_up3.png" height="150" width="auto"/>
+                <p> a rocket, a lithograph of a waterfall </p>
+
+
+                <p> To see the rocket, check this low frequency image </p>
+                <img src="./media/hybrid_photo_up3_support.png" height="150" width="auto"/>
+            </td>
+        </tr>
+    </table>
+
+    This is the end of part A, thanks for checking this out!
+
+</body>
+</html>
