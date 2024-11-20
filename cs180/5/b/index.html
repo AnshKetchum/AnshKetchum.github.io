@@ -111,10 +111,12 @@
 
     <h2> Part 2 - Training a diffusion model </h2>
     <h3> 2.1 - Adding Time Conditioning to UNet </h3>
-
-    <p> Made FCBlock ... and spent a good bit debugging it. </p>
-
     <h3> 2.2 + 2.3 - Training and Sampling the Time Conditioning UNet </h3>
+
+    <p> Below, you will find training loss curves from a 5 epoch and 20 epoch run. You will also find examples of denoising attempts from 
+        batch data provided during train time, and some examples of sampling the model from scratch. 
+    </p>
+
     <h4> 5 Epoch Training Results </h4>
     <table>
         <tr>
@@ -166,8 +168,14 @@
     </table>
 
     <h2> Adding Class Conditioning </h2>
-    <h3> 2.4 - Integrating Class Conditioning to Unet </h3>
-    <p> [TODO] - better description Made FCBlock ... and spent a good bit debugging it. </p>
+    <h3> 2.4, 2.5, 2.6 - Integrating Class Conditioning to Unet </h3>
+    
+    <p> The denoising UNet was trained for 5 epochs, and 20 epochs with a hidden dimension D of 128. Notably for the sake of performance, I enabled the training to sample batches of timesteps rather than one single timestep for all. </p>
+
+    <p> Previously, I had faced accuracy limitations, where my mean squared loss for optimization would taper off around 0.4. One notable suggestion during office hours was to replace the last "Conv" layer with a Conv(3, 1, 1), or a convolution layer with a kernel size of 3, and padding & stride of 1. </p>
+
+    <p> But we're here now. In 2.4, I implemented class conditioning for my already time conditioned diffusion model. Below, you will find training and sampling results from a run consisting of 5 epochs, and then 20 epochs. Each run lists the training loss curve (training requirements), alongside visualizations of the training data being fed to the class conditioning model and the output. At epoch 5 and 20, I also sample the model (completely from scratch - passing in a random tensor), and show how 
+        the digits are being listed. </p>
 
     <h4> 5 Epoch Training Results </h4>
     <table>
@@ -180,7 +188,7 @@
         <tr>
             <td>
                 <p> Visualization of data generated after the end of the 5th epoch</p>
-                <img src="./media/class_conditioned_epoch_5_sample_run5.png" />  
+                <img src="./media/class_conditioned_epoch_5_sample_run5.png" height="125px" width="auto" />  
             </td>
         </tr>
         <tr>
