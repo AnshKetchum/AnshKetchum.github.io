@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            table-layout: fixed;
+        }
+        td {
+            text-align: center;
+            vertical-align: top;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            overflow-x: auto;
+        }
+        img {
+            max-width: 1200px;
+            max-height: 1200px;
+        } 
+    </style>
+    <title> CS 180 - Final Project, Precanned: High Dynamic Range </title>
+</head>
+<body>
+    <h1> Precanned, High Dynamic Range </h1>
+    <p> This project focused on techniques to learn a mapping from pixel values to exposures. Check out the original instructions <a href="https://cs.brown.edu/courses/cs129/2012/asgn/proj5/"> here! </a>  </p>
+
+    <div>
+        <h2> Table of Contents </h2>
+        <ul>
+            <li><a href="#part1"> Part 1  </a></li>
+            <li><a href="#ablations"> Testing out various lambdas</a></li>
+            <li><a href="#part2"> Part 2  </a></li>
+            <li><a href="#general"> General </a></li>
+            <li><a href="#bw"> Bells and Whistles (Shooting with Custom Data) </a></li>
+        </ul>
+    </div>
+
+    <h2> Overview </h2>
+    <p> In this project, I implemented four core procedures - solve_g, a method to estimate the mapping from pixel values back to exposures by setting up a least squares problem; hdr, a method to use estimations from the solve_g matrix to come up with a radiance image, and tm_global_simple and tm_durand, different methods of visualization through tone mapping. </p>
+
+    <h2 id="part1"> Part 1 - Recovering a radiance map from a collection of images </h2>
+    <p> In this part, I worked to implement solve_g and hdr. Both of these methods come from Malik and Debevec's <a href="https://www.pauldebevec.com/Research/HDR/debevec-siggraph97.pdf"> 1997 paper</a>. </p>
+
+    <p> Implementation wise, the biggest challenges I faced involved setting up the A matrix, in the Ax = b least squares format; mixed up coefficients are a needle in a haystack to discern. </p>
+
+    <p> Attached are curves of the pixel value to exposure curves from visualizing the result of solve_g on the default image. </p>
+
+    <img src="./media/default_curve.png" />
+
+    <h3> Radiance Map </h3>
+    <img src="./media/tone_mapping_arch.png" />
+
+
+    <h3 id="ablations"> Ablations - Messing around with Lambda </h3>
+    <p> Deciding to take lambda to the extremes, I wanted to see what I would get if I tried poles such as 0, 25, and ... 100,000. Eye candy first. </p>
+
+    <h4> Lambda = 100,000 </h4>
+    <img src="./media/varying_lambda/lambda_100000.png" />
+    <img src="./media/varying_lambda/radiance_100000.png" />
+
+    <h4> Lambda = 0 </h4>
+    <img src="./media/varying_lambda/lambda_0.png" />
+    <img src="./media/varying_lambda/radiance_0.png" />
+    <img src="./media/varying_lambda/durand_0.png" />
+
+    <h4> Lambda = 25 </h4>
+    <img src="./media/varying_lambda/lambda_25.png" />
+    <img src="./media/varying_lambda/radiance_25.png" />
+
+    <h2> Part 2 (Tone Mapping) - Converting this radiance map into a display image </h2>
+    <p> In this part, I implemented two tone mapping methods. By tone mapping methods, I'm referring to methods that alter the dynamic range of the image in order to see really dark or bridge details in the image. We implemented two methods - global simple, applying the transformation E' = E / (1 + E), and Durand scaling. </p>
+
+    <h3> Example of Tone Mapping </h3>
+    <img src="./media/tone_mapping_arch.png" />
+
+
+    <h3 id="general"> General Results </h3>
+    <p> Here are the general results on the dataset. </p>
+
+    <h4> Bonsai </h4>
+    <img src="./media/bonsai/g_function_curve.png" />
+    <img src="./media/bonsai/radiance_map_bonsai.png" />
+    <img src="./media/bonsai/tone_mapping_bonsai.png" />
+
+    <h4> Chapel </h4>
+    <img src="./media/chapel/g_function_curve.png" />
+    <img src="./media/chapel/radiance_map_chapel.png" />
+    <img src="./media/chapel/tone_mapping.png" />
+
+    <h4> Garage </h4>
+    <img src="./media/garage/g_function_curve.png" />
+    <img src="./media/garage/radiance_map_garage.png" />
+    <img src="./media/garage/tone_mapping_garage.png" />
+
+    <h4> Garden </h4>
+    <img src="./media/garden/g_function_curve.png" />
+    <img src="./media/garden/radiance_map.png" />
+    <img src="./media/garden/tone_mapping.png" />
+
+    <h4> House </h4>
+    <img src="./media/house/g_function_curve.png" />
+    <img src="./media/house/radiance_map.png" />
+    <img src="./media/house/tone_mapping.png" />
+
+    <h4> Mug </h4>
+    <img src="./media/mug/g_function_curve.png" />
+    <img src="./media/mug/radiance_map.png" />
+    <img src="./media/mug/tone_mapping.png" />
+
+    <h4> Window </h4>
+    <img src="./media/window/g_function_curve.png" />
+    <img src="./media/window/radiance_map.png" />
+    <img src="./media/window/tone_mapping.png" />
+
+
+    <h4 id="bw"> Bells and Whistles - Dia de los Muertos Skull </h4>
+    <p> For bells and whistles on this project, I've played around with my iPhone to create varying exposure images. I learned a couple things the hard way - Apple iPhones only have a range from -2 to 2, and the least squares code doesn't support 
+        negative exposures! To rectify this, I phase shifted everything over by +2.
+    </p>
+    <img src="./media/skull/g_function_curve.png"/>
+    <img src="./media/skull/radiance_map_chapel.png" />
+    <img src="./media/skull/tone_mapping.png" />
+
+</body>
+</html>

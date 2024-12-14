@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            table-layout: fixed;
+        }
+        td {
+            text-align: center;
+            vertical-align: top;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            overflow-x: auto;
+        }
+        img {
+            max-width: 1200px;
+            max-height: 1200px;
+        } 
+    </style>
+    <title> CS 180 - Final Project, Precanned: Gradient Domain Fusion </title>
+</head>
+<body>
+    <h1> Precanned, Gradient Domain Fusion </h1>
+    <p> This project was focused on some custom blending techniques. Check out the original instructions <a href="https://inst.eecs.berkeley.edu/~cs194-26/sp20/hw/gradient-domain-fusion/"> here! </a> </p>
+
+    <div>
+        <h2> Table of Contents </h2>
+        <ul>
+            <li> <a href="#toy"> Results on a toy problem </a></li>
+            <li> <a href="#poisson"> General Purpose Results </a></li>
+            <li> <a href="#bw"> Bells and Whistles </a></li>
+        </ul>
+    </div>
+
+    <h2 id="toy"> Part 1 - Toy Problem </h2>
+    <p> In this part, we implemented a smaller scale version of gradient domain fusion, building up to the task of implementing Poisson blending. We implement a toy solver, where we solve for v, the gradients that minimize the difference between the source image (the image we want to add in), and the target (background image). </p>
+
+    <h3> Reconstructed Face </h3>
+    <p> Attached are the results from the reconstructed face. </p>
+    <p> The error was found to be around ~0.001 (saying around since they vary with each re-run). </p>
+
+    <h4> Original </h4>
+    <img src="./media/toy_problem.png" height="400px" width="auto"/>
+
+    <h4> Reconstructed </h4>
+    <img src="./media/reconstructed_toy_problem.png" height="400px" width="auto"/>
+
+    <h2> Part 2 - Performing Poisson Blending </h2>
+    <p> Now, we implement the real thing.  </p>
+
+    <h3 id="poisson"> Poisson Blending Results </h3>
+    <table>
+        <tr>
+            <td>
+                <h2> Snow  (Background) </h2>
+                <img src="./media/im2.JPG" height="400px" width="auto"/>
+            </td>
+            <td>
+                <h2> Penguin </h2>
+                <img src="./media/penguin-chick.jpeg" height="400px" width="auto" />
+            </td>
+            <td>
+                <h2> Poisson Blended Result </h2>
+                <img src="./media/poisson_blended_chick.png" height="400px" width="auto"/>
+            </td>
+        </tr>
+    </table>
+
+    <h3 id="bw"> Bells and Whistles </h3>
+
+
+</body>
+</html>
