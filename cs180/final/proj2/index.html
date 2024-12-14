@@ -78,6 +78,17 @@
 
     <h3 id="bw"> Bells and Whistles </h3>
 
+    <h4> Additional Gradient Domain Based Tricks </h4>
+    <h5> Gradient Domain Based Processing </h5>
+    <img src="./media/gradient_based_techniques.png" />
+    <p> In this image, I took the same image, and enhanced it in two ways - black and white enhancement, and "cartoonization". With Black and white enhancement, we do a similar thing we did with alpha filtering, but with the 
+        Sobel gradient. Here is the procedure I used to cartoonize my image.
+    </p>
 
+    <ol>
+        <li> Bilateral Filtering. I picked this up from the other HDR project, thought it was cool. </li>
+        <li> Color quantization. Really mindblowing technique, we can use k-means clustering to pick a couple colors, and broadly assign them. That's how the lower-quality but lower color look appears. </li>
+    </ol>
+    
 </body>
 </html>
