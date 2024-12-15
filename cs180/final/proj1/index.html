@@ -1,19 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS 180 - Final Project, Precanned: High Dynamic Range</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            text-align: center;
         }
+
         table {
             width: 100%;
             table-layout: fixed;
         }
+
         td {
             text-align: center;
             vertical-align: top;
         }
+
         pre {
             background-color: #f4f4f4;
             padding: 15px;
@@ -22,113 +30,298 @@
             font-family: "Courier New", Courier, monospace;
             overflow-x: auto;
         }
+
         img {
-            max-width: 1200px;
-            max-height: 1200px;
-        } 
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        img:hover {
+            transform: scale(1.5);
+            z-index: 1;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            color: #333;
+        }
+
+        a {
+            color: #0066cc;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            margin: 8px 0;
+        }
+
+        ul li a {
+            color: #0066cc;
+        }
+
+        .carousel-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .carousel-images {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+
+        .carousel-images img {
+            width: auto;
+            height: auto;
+            max-width: 400px;
+            margin: 0 10px;
+            display: inline-block;
+        }
+
+        .carousel-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .carousel-buttons button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .carousel-buttons button:hover {
+            background-color: #005bb5;
+        }
+
+        .image-caption {
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .content-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex-direction: column;
+        }
     </style>
-    <title> CS 180 - Final Project, Precanned: High Dynamic Range </title>
 </head>
+
 <body>
-    <h1> Precanned, High Dynamic Range </h1>
-    <p> This project focused on techniques to learn a mapping from pixel values to exposures. Check out the original instructions <a href="https://cs.brown.edu/courses/cs129/2012/asgn/proj5/"> here! </a>  </p>
+    <h1>Precanned, High Dynamic Range</h1>
+    <p>This project focused on techniques to learn a mapping from pixel values to exposures. Check out the original instructions
+        <a href="https://cs.brown.edu/courses/cs129/2012/asgn/proj5/" target="_blank">here!</a>
+    </p>
 
     <div>
-        <h2> Table of Contents </h2>
+        <h2>Table of Contents</h2>
         <ul>
-            <li><a href="#part1"> Part 1  </a></li>
-            <li><a href="#ablations"> Testing out various lambdas</a></li>
-            <li><a href="#part2"> Part 2  </a></li>
-            <li><a href="#general"> General </a></li>
-            <li><a href="#bw"> Bells and Whistles (Shooting with Custom Data) </a></li>
+            <li><a href="#part1">Part 1</a></li>
+            <li><a href="#ablations">Testing out various lambdas</a></li>
+            <li><a href="#part2">Part 2</a></li>
+            <li><a href="#general">General</a></li>
+            <li><a href="#bw">Bells and Whistles (Shooting with Custom Data)</a></li>
         </ul>
     </div>
 
-    <h2> Overview </h2>
-    <p> In this project, I implemented four core procedures - solve_g, a method to estimate the mapping from pixel values back to exposures by setting up a least squares problem; hdr, a method to use estimations from the solve_g matrix to come up with a radiance image, and tm_global_simple and tm_durand, different methods of visualization through tone mapping. </p>
+    <h2>Overview</h2>
+    <p>In this project, I implemented four core procedures - solve_g, a method to estimate the mapping from pixel values
+        back to exposures by setting up a least squares problem; hdr, a method to use estimations from the solve_g matrix to
+        come up with a radiance image, and tm_global_simple and tm_durand, different methods of visualization through tone mapping.</p>
 
-    <h2 id="part1"> Part 1 - Recovering a radiance map from a collection of images </h2>
-    <p> In this part, I worked to implement solve_g and hdr. Both of these methods come from Malik and Debevec's <a href="https://www.pauldebevec.com/Research/HDR/debevec-siggraph97.pdf"> 1997 paper</a>. </p>
+    <h2 id="part1">Part 1 - Recovering a Radiance Map from a Collection of Images</h2>
+    <p>In this part, I worked to implement solve_g and hdr. Both of these methods come from Malik and Debevec's
+        <a href="https://www.pauldebevec.com/Research/HDR/debevec-siggraph97.pdf" target="_blank">1997 paper</a>.</p>
+    <p>Implementation-wise, the biggest challenges I faced involved setting up the A matrix, in the Ax = b least squares
+        format; mixed-up coefficients are a needle in a haystack to discern.</p>
 
-    <p> Implementation wise, the biggest challenges I faced involved setting up the A matrix, in the Ax = b least squares format; mixed up coefficients are a needle in a haystack to discern. </p>
+    <p>Attached are curves of the pixel value to exposure curves from visualizing the result of solve_g on the default image.</p>
 
-    <p> Attached are curves of the pixel value to exposure curves from visualizing the result of solve_g on the default image. </p>
+    <img src="./media/default_curve.png" alt="Default Image Curve" />
 
-    <img src="./media/default_curve.png" />
+    <h3>Radiance Map</h3>
+    <img src="./media/tone_mapping_arch.png" alt="Radiance Map Image" />
 
-    <h3> Radiance Map </h3>
-    <img src="./media/tone_mapping_arch.png" />
+    <h3 id="ablations">Ablations - Messing around with Lambda</h3>
+    <p>Deciding to take lambda to the extremes, I wanted to see what I would get if I tried poles such as 0, 25, and 100,000. Eye candy first.</p>
 
+    <!-- Lambda Carousel -->
+    <div class="carousel-container">
+        <h3>Lambda Results</h3>
 
-    <h3 id="ablations"> Ablations - Messing around with Lambda </h3>
-    <p> Deciding to take lambda to the extremes, I wanted to see what I would get if I tried poles such as 0, 25, and ... 100,000. Eye candy first. </p>
+        <div class="carousel-images">
+            <div class="carousel-item" id="lambda_100000">
+                <h4> Lambda = 100,000</h4>
+                <img src="./media/varying_lambda/lambda_100000.png" alt="Lambda 100000">
+                <img src="./media/varying_lambda/radiance_100000.png" alt="Radiance Lambda 100000">
+            </div>
+            <div class="carousel-item" id="lambda_25" style="display: none;">
+                <h4> Lambda = 25</h4>
+                <img src="./media/varying_lambda/lambda_25.png" alt="Lambda 25">
+                <img src="./media/varying_lambda/radiance_25.png" alt="Radiance Lambda 25">
+            </div>
+            <div class="carousel-item" id="lambda_0" style="display: none;">
+                <h4> Lambda = 0</h4>
+                <img src="./media/varying_lambda/lambda_0.png" alt="Lambda 0">
+                <img src="./media/varying_lambda/radiance_0.png" alt="Radiance Lambda 0">
+                <img src="./media/varying_lambda/durand_0.png" alt="Durand Lambda 0">
+            </div>
+        </div>
 
-    <h4> Lambda = 100,000 </h4>
-    <img src="./media/varying_lambda/lambda_100000.png" />
-    <img src="./media/varying_lambda/radiance_100000.png" />
+        <!-- Lambda Carousel Buttons -->
+        <div class="carousel-buttons">
+            <button onclick="changeLambdaImage('prev')">Previous</button>
+            <button onclick="changeLambdaImage('next')">Next</button>
+        </div>
+    </div>
 
-    <h4> Lambda = 0 </h4>
-    <img src="./media/varying_lambda/lambda_0.png" />
-    <img src="./media/varying_lambda/radiance_0.png" />
-    <img src="./media/varying_lambda/durand_0.png" />
+    <h2 id="part2">Part 2 (Tone Mapping) - Converting this Radiance Map into a Display Image</h2>
+    <p>In this part, I implemented two tone mapping methods. By tone mapping methods, I'm referring to methods that alter the dynamic range of the image in order to see really dark or bridge details in the image. We implemented two methods - global simple, applying the transformation E' = E / (1 + E), and Durand scaling.</p>
 
-    <h4> Lambda = 25 </h4>
-    <img src="./media/varying_lambda/lambda_25.png" />
-    <img src="./media/varying_lambda/radiance_25.png" />
+    <h3>Example of Tone Mapping</h3>
+    <img src="./media/tone_mapping_arch.png" alt="Tone Mapping Example">
 
-    <h2> Part 2 (Tone Mapping) - Converting this radiance map into a display image </h2>
-    <p> In this part, I implemented two tone mapping methods. By tone mapping methods, I'm referring to methods that alter the dynamic range of the image in order to see really dark or bridge details in the image. We implemented two methods - global simple, applying the transformation E' = E / (1 + E), and Durand scaling. </p>
+    <h3 id="general">General Results</h3>
+    <p>Here are the general results on the dataset.</p>
 
-    <h3> Example of Tone Mapping </h3>
-    <img src="./media/tone_mapping_arch.png" />
+    <div class="carousel-container">
+        <h3>Gallery</h3>
 
+        <!-- Main Image Carousel -->
+        <div class="carousel-images">
+            <div class="carousel-item" id="bonsai">
+                <img src="./media/bonsai/g_function_curve.png" alt="Bonsai G Function Curve">
+                <img src="./media/bonsai/radiance_map_bonsai.png" alt="Bonsai Radiance Map">
+                <img src="./media/bonsai/tone_mapping_bonsai.png" alt="Bonsai Tone Mapping">
+            </div>
+            <div class="carousel-item" id="chapel" style="display: none;">
+                <img src="./media/chapel/g_function_curve.png" alt="Chapel G Function Curve">
+                <img src="./media/chapel/radiance_map_chapel.png" alt="Chapel Radiance Map">
+                <img src="./media/chapel/tone_mapping.png" alt="Chapel Tone Mapping">
+            </div>
+            <div class="carousel-item" id="garage" style="display: none;">
+                <img src="./media/garage/g_function_curve.png" alt="Garage G Function Curve">
+                <img src="./media/garage/radiance_map_garage.png" alt="Garage Radiance Map">
+                <img src="./media/garage/tone_mapping_garage.png" alt="Garage Tone Mapping">
+            </div>
+            <div class="carousel-item" id="garden" style="display: none;">
+                <img src="./media/garden/g_function_curve.png" alt="Garden G Function Curve">
+                <img src="./media/garden/radiance_map.png" alt="Garden Radiance Map">
+                <img src="./media/garden/tone_mapping.png" alt="Garden Tone Mapping">
+            </div>
+            <div class="carousel-item" id="house" style="display: none;">
+                <img src="./media/house/g_function_curve.png" alt="House G Function Curve">
+                <img src="./media/house/radiance_map.png" alt="House Radiance Map">
+                <img src="./media/house/tone_mapping.png" alt="House Tone Mapping">
+            </div>
+            <div class="carousel-item" id="mug" style="display: none;">
+                <img src="./media/mug/g_function_curve.png" alt="Mug G Function Curve">
+                <img src="./media/mug/radiance_map.png" alt="Mug Radiance Map">
+                <img src="./media/mug/tone_mapping.png" alt="Mug Tone Mapping">
+            </div>
+            <div class="carousel-item" id="window" style="display: none;">
+                <img src="./media/window/g_function_curve.png" alt="Window G Function Curve">
+                <img src="./media/window/radiance_map.png" alt="Window Radiance Map">
+                <img src="./media/window/tone_mapping.png" alt="Window Tone Mapping">
+            </div>
+        </div>
 
-    <h3 id="general"> General Results </h3>
-    <p> Here are the general results on the dataset. </p>
+        <!-- Image Caption -->
+        <div id="image-caption" class="image-caption">Bonsai</div>
 
-    <h4> Bonsai </h4>
-    <img src="./media/bonsai/g_function_curve.png" />
-    <img src="./media/bonsai/radiance_map_bonsai.png" />
-    <img src="./media/bonsai/tone_mapping_bonsai.png" />
+        <!-- Main Carousel Buttons -->
+        <div class="carousel-buttons">
+            <button onclick="changeImage('prev')">Previous</button>
+            <button onclick="changeImage('next')">Next</button>
+        </div>
+    </div>
 
-    <h4> Chapel </h4>
-    <img src="./media/chapel/g_function_curve.png" />
-    <img src="./media/chapel/radiance_map_chapel.png" />
-    <img src="./media/chapel/tone_mapping.png" />
-
-    <h4> Garage </h4>
-    <img src="./media/garage/g_function_curve.png" />
-    <img src="./media/garage/radiance_map_garage.png" />
-    <img src="./media/garage/tone_mapping_garage.png" />
-
-    <h4> Garden </h4>
-    <img src="./media/garden/g_function_curve.png" />
-    <img src="./media/garden/radiance_map.png" />
-    <img src="./media/garden/tone_mapping.png" />
-
-    <h4> House </h4>
-    <img src="./media/house/g_function_curve.png" />
-    <img src="./media/house/radiance_map.png" />
-    <img src="./media/house/tone_mapping.png" />
-
-    <h4> Mug </h4>
-    <img src="./media/mug/g_function_curve.png" />
-    <img src="./media/mug/radiance_map.png" />
-    <img src="./media/mug/tone_mapping.png" />
-
-    <h4> Window </h4>
-    <img src="./media/window/g_function_curve.png" />
-    <img src="./media/window/radiance_map.png" />
-    <img src="./media/window/tone_mapping.png" />
-
-
-    <h4 id="bw"> Bells and Whistles - Dia de los Muertos Skull </h4>
-    <p> For bells and whistles on this project, I've played around with my iPhone to create varying exposure images. I learned a couple things the hard way - Apple iPhones only have a range from -2 to 2, and the least squares code doesn't support 
-        negative exposures! To rectify this, I phase shifted everything over by +2.
-    </p>
-    <img src="./media/skull/g_function_curve.png"/>
-    <img src="./media/skull/radiance_map_chapel.png" />
-    <img src="./media/skull/tone_mapping.png" />
-
+    <h3 id="bw">Bells and Whistles (Shooting with Custom Data)</h3>
+    <p>For bells and whistles on this project, I've played around with my iPhone to create varying exposure images. I learned a couple things the hard way - Apple iPhones only have a range from -2 to 2, and the least squares code doesn't support negative exposures! To rectify this, I phase shifted everything over by +2.</p>
+    <img src="./media/skull/g_function_curve.png" alt="Custom Data Tone Mapping">
+    <img src="./media/skull/radiance_map_chapel.png" alt="Custom Data Tone Mapping">
+    <img src="./media/skull/tone_mapping.png" alt="Custom Data Tone Mapping">
 </body>
+
+<script>
+    let currentImage = 0;
+    const images = [
+        'bonsai',
+        'chapel',
+        'garage',
+        'garden',
+        'house',
+        'mug',
+        'window'
+    ];
+
+    function changeImage(direction) {
+        const totalImages = images.length;
+        const currentItem = document.getElementById(images[currentImage]);
+        currentItem.style.display = 'none';
+
+        if (direction === 'next') {
+            currentImage = (currentImage + 1) % totalImages;
+        } else if (direction === 'prev') {
+            currentImage = (currentImage - 1 + totalImages) % totalImages;
+        }
+
+        const nextItem = document.getElementById(images[currentImage]);
+        nextItem.style.display = 'block';
+
+        // Update caption
+        document.getElementById('image-caption').textContent = images[currentImage].charAt(0).toUpperCase() + images[currentImage].slice(1);
+    }
+
+    // Lambda Carousel
+    let currentLambda = 0;
+    const lambdas = [
+        'lambda_100000',
+        'lambda_0',
+        'lambda_25'
+    ];
+
+    function changeLambdaImage(direction) {
+        const totalLambdas = lambdas.length;
+        const currentLambdaItem = document.getElementById(lambdas[currentLambda]);
+        currentLambdaItem.style.display = 'none';
+
+        if (direction === 'next') {
+            currentLambda = (currentLambda + 1) % totalLambdas;
+        } else if (direction === 'prev') {
+            currentLambda = (currentLambda - 1 + totalLambdas) % totalLambdas;
+        }
+
+        const nextLambdaItem = document.getElementById(lambdas[currentLambda]);
+        nextLambdaItem.style.display = 'block';
+    }
+
+    // Initialize first image and lambda
+    changeImage('next');
+    changeLambdaImage('next');
+</script>
+
 </html>
