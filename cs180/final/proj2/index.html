@@ -1,19 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS 180 - Final Project, Precanned: Gradient Domain Fusion</title>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        table {
-            width: 100%;
-            table-layout: fixed;
-        }
-        td {
+            margin: 0;
+            display: flex;
+            background-color: #fafafa;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
             text-align: center;
-            vertical-align: top;
         }
+
+        .content {
+            padding: 20px;
+            width: 80%;
+        }
+
+        h1, h2, h3, h4, h5 {
+            color: #333;
+        }
+
+        .content-section {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .content-text {
+            width: 48%;
+            text-align: left;
+            margin-bottom: 20px; /* Added margin-bottom for separation */
+        }
+
+        .content-image {
+            width: 48%;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            padding-left: 20px; /* Added padding to the left of images for separation */
+        }
+
+        img {
+            width: 70%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        img:hover {
+            transform: scale(4.05);
+            z-index: 10; /* Ensure it overlays above other content */
+            transform: translate(-50%, -50%) scale(2); /* Center the image while scaling */
+        }
+
         pre {
             background-color: #f4f4f4;
             padding: 15px;
@@ -22,73 +72,197 @@
             font-family: "Courier New", Courier, monospace;
             overflow-x: auto;
         }
-        img {
-            max-width: 1200px;
-            max-height: 1200px;
-        } 
+
+        a {
+            color: #0077cc;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        ul li {
+            margin: 10px 0;
+        }
+
+        .content-section:nth-child(even) .content-text {
+            text-align: right;
+        }
+
+        .content-section:nth-child(even) .content-image {
+            text-align: left;
+        }
+
+        .image-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        /* Ensure that MathJax renders correctly */
+        .mathjax {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        /* Apply specific style to toy problem and reconstructed toy problem images */
+        .tagger img {
+            max-height: 300px; /* Adjust this value to make images smaller */
+            width: auto;
+            margin: 0 auto;
+            display: block;
+        }
+
     </style>
-    <title> CS 180 - Final Project, Precanned: Gradient Domain Fusion </title>
 </head>
 <body>
-    <h1> Precanned, Gradient Domain Fusion </h1>
-    <p> This project was focused on some custom blending techniques. Check out the original instructions <a href="https://inst.eecs.berkeley.edu/~cs194-26/sp20/hw/gradient-domain-fusion/"> here! </a> </p>
 
-    <div>
-        <h2> Table of Contents </h2>
-        <ul>
-            <li> <a href="#toy"> Results on a toy problem </a></li>
-            <li> <a href="#poisson"> General Purpose Results </a></li>
-            <li> <a href="#bw"> Bells and Whistles </a></li>
-        </ul>
+    <div class="content">
+        <header>
+            <h1>Precanned, Gradient Domain Fusion</h1>
+            <img src="./media/cartoon_image.jpg" id="title-image" alt="Cartoon Image" />
+            <p>
+                This project explores the concept of Gradient Domain Fusion (GDF), an image processing technique that allows us to blend images in a seamless way by operating in the gradient domain. The objective of this project was to implement the core technique of Poisson blending, which is a key application of GDF. In particular, we implemented both a small-scale version of the technique for a toy problem, and then extended it to larger, more complex images using Poisson equations.
+            </p>
+            <p>
+                For more information, check out the original instructions for the project 
+                <a href="https://inst.eecs.berkeley.edu/~cs194-26/sp20/hw/gradient-domain-fusion/">here!</a>
+            </p>
+        </header>
+
+        <section class="content-section">
+            <div class="content-text">
+                <h2>Part 1 - Toy Problem</h2>
+                <p>
+                    In this first part of the project, we implemented a simplified version of Gradient Domain Fusion to better understand the mechanics of the algorithm before scaling it up to larger images. The primary task was to solve for the gradients \( v \), which are defined as the difference between the source image \( I_{src} \) (the image we want to blend) and the target image \( I_{target} \) (the background image we are blending the source into).
+                </p>
+                <p>
+                    The process involves solving a set of Poisson equations to compute the values of the gradient field \( v \), which minimizes the error between the source and target images. This can be formulated as a system of linear equations that we solve iteratively.
+                </p>
+                <p>
+                    The toy problem is based on blending a face into a background. We computed the gradients in the image domain, and then used the solution to reconstruct the image. The goal was to minimize the difference in the gradient domain between the two images, while preserving the color and intensity of the target image as much as possible.
+                </p>
+                <p>
+                    The error, which measures the difference between the original and reconstructed images, was found to be around \( \sim 0.001 \). This value can vary slightly with each run, but it indicates that the gradients were successfully preserved during the blending process.
+                </p>
+            </div>
+            <div class="content-image tagger">
+                <h4 class="image-title">Original</h4>
+                <img src="./media/toy_problem.png" alt="Original Toy Problem" />
+
+                <h4 class="image-title">Reconstructed</h4>
+                <img src="./media/reconstructed_toy_problem.png" alt="Reconstructed Toy Problem" />
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="content-text">
+                <h2>Part 2 - Performing Poisson Blending</h2>
+                <p>
+                    With the toy problem as a foundation, we moved on to implementing the full Poisson blending algorithm, which is the core of Gradient Domain Fusion. Poisson blending solves the Poisson equation:
+                </p>
+                <p>\[
+                \nabla^2 f = \nabla \cdot v
+                \] </p>
+            <p>
+
+            (fancy equation I found on the web). The solution of this equation gives us a new image that incorporates the gradients from the source image, while preserving the overall structure and color information of the target image.
+            </p>
+            
+                <p>
+                    We solved this equation using least squares, which compute the values of the unknowns (the pixel intensities in the target region) that satisfy the equation above. This process is computationally intensive, ESPECIALLY if the images are \( \geq 1024 \) px , but it allows for smooth and natural blending, with minimal visible seams between the source and target images.
+                </p>
+
+                <h3>Poisson Blending Results</h3>
+                <p>
+                    Here, we showcase the results of applying Poisson blending to various pairs of images. The first row shows the blending of a snow background with a penguin, while the second row blends a different snow background with another penguin.
+                </p>
+            </div>
+            <div class="content-image">
+                <table style="width: 100%; margin: 0 auto;">
+                    <tr>
+                        <td style="position: relative;">
+                            <h2 class="image-title">Snow (Background)</h2>
+                            <img src="./media/im2.JPG" alt="Snow Background" />
+                        </td>
+                        <td style="position: relative;">
+                            <h2 class="image-title">Penguin</h2>
+                            <img src="./media/penguin-chick.jpeg" alt="Penguin" />
+                        </td>
+                        <td style="position: relative;">
+                            <h2 class="image-title">Poisson Blended Result</h2>
+                            <img src="./media/one_penguin.png" alt="Poisson Blended Result" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="position: relative;">
+                            <h2 class="image-title">Anotha One (Background)</h2>
+                            <img src="./media/im3.jpg" alt="Anotha One Background" />
+                        </td>
+                        <td style="position: relative;">
+                            <h2 class="image-title">Penguin</h2>
+                            <img src="./media/penguin.jpg" alt="Penguin" />
+                        </td>
+                        <td style="position: relative;">
+                            <h2 class="image-title">Poisson Blended Result</h2>
+                            <img src="./media/different_penguin.jpg" alt="Poisson Blended Result" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="content-text">
+                <h3>Additional Fun with Poisson...</h3>
+                <p>
+                    In my submission, I also implemented a tool to modify the position of the blended object dynamically. This tool allows me to select different positions in the image and automatically place the object there. This functionality was implemented in a modified version of the `utils.py` interface, and the full flow can be found in the `run.py` file. The images below show some examples created using this tool.
+                </p>
+            </div>
+            <div class="content-image">
+                <table style="width: 100%; margin: 0 auto;">
+                    <tr>
+                        <td style="position: relative;">
+                            <h2 class="image-title">Uno</h2>
+                            <img src="./media/one_penguin.png" alt="Uno" />
+                        </td>
+                        <td style="position: relative;">
+                            <h2 class="image-title">Dos</h2>
+                            <img src="./media/two_penguins.jpg" alt="Dos" />
+                        </td>
+                        <td style="position: relative;">
+                            <h2 class="image-title">Tres</h2>
+                            <img src="./media/three_penguins.jpg" alt="Tres" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="content-text">
+                <h3>Bells and Whistles</h3>
+                <p>
+                    As part of the advanced processing steps, I also experimented with additional gradient domain-based techniques. These included enhancing the image with black and white filters and applying a cartoonization effect to the images.
+                </p>
+            </div>
+            <div class="content-image">
+                <h4 class="image-title">Gradient-Based Processing</h4>
+                <img src="./media/gradient_based_techniques.png" alt="Gradient Based Techniques" />
+            </div>
+        </section>
     </div>
 
-    <h2 id="toy"> Part 1 - Toy Problem </h2>
-    <p> In this part, we implemented a smaller scale version of gradient domain fusion, building up to the task of implementing Poisson blending. We implement a toy solver, where we solve for v, the gradients that minimize the difference between the source image (the image we want to add in), and the target (background image). </p>
-
-    <h3> Reconstructed Face </h3>
-    <p> Attached are the results from the reconstructed face. </p>
-    <p> The error was found to be around ~0.001 (saying around since they vary with each re-run). </p>
-
-    <h4> Original </h4>
-    <img src="./media/toy_problem.png" height="400px" width="auto"/>
-
-    <h4> Reconstructed </h4>
-    <img src="./media/reconstructed_toy_problem.png" height="400px" width="auto"/>
-
-    <h2> Part 2 - Performing Poisson Blending </h2>
-    <p> Now, we implement the real thing.  </p>
-
-    <h3 id="poisson"> Poisson Blending Results </h3>
-    <table>
-        <tr>
-            <td>
-                <h2> Snow  (Background) </h2>
-                <img src="./media/im2.JPG" height="400px" width="auto"/>
-            </td>
-            <td>
-                <h2> Penguin </h2>
-                <img src="./media/penguin-chick.jpeg" height="400px" width="auto" />
-            </td>
-            <td>
-                <h2> Poisson Blended Result </h2>
-                <img src="./media/poisson_blended_chick.png" height="400px" width="auto"/>
-            </td>
-        </tr>
-    </table>
-
-    <h3 id="bw"> Bells and Whistles </h3>
-
-    <h4> Additional Gradient Domain Based Tricks </h4>
-    <h5> Gradient Domain Based Processing </h5>
-    <img src="./media/gradient_based_techniques.png" />
-    <p> In this image, I took the same image, and enhanced it in two ways - black and white enhancement, and "cartoonization". With Black and white enhancement, we do a similar thing we did with alpha filtering, but with the 
-        Sobel gradient. Here is the procedure I used to cartoonize my image.
-    </p>
-
-    <ol>
-        <li> Bilateral Filtering. I picked this up from the other HDR project, thought it was cool. </li>
-        <li> Color quantization. Really mindblowing technique, we can use k-means clustering to pick a couple colors, and broadly assign them. That's how the lower-quality but lower color look appears. </li>
-    </ol>
-    
 </body>
 </html>
