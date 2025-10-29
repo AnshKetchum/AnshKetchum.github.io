@@ -7,6 +7,8 @@ redirect_from:
   - /about.html
 ---
 
+I am an undergraduate student with a passion to explore the depths of artificially intelligent models, and understanding them as a whole. Currently, I serve as a Member of Technical Staff at Zyphra Technologies, connecting hardware from emerging accelerators to novel foundational model architectures and helping improve performance at the pretraining and inference stages for our foundational models. My interests lie in how we can build, train, and serve foundational models that can better capture human intelligence, and then design performant hardware accelerators through the principles of software/hardware co-design.
+
 This is the front page of a website that is powered by the [Academic Pages template](https://github.com/academicpages/academicpages.github.io) and hosted on GitHub pages. [GitHub pages](https://pages.github.com) is a free service in which websites are built and hosted from code and data stored in a GitHub repository, automatically updating when a new commit is made to the repository. This template was forked from the [Minimal Mistakes Jekyll Theme](https://mmistakes.github.io/minimal-mistakes/) created by Michael Rose, and then extended to support the kinds of content that academics have: publications, talks, teaching, a portfolio, blog posts, and a dynamically-generated CV. Incidentally, these same features make it a great template for anyone that needs to show off a professional template!
 
  You can fork [this template](https://github.com/academicpages/academicpages.github.io) right now, modify the configuration and Markdown files, add your own PDFs and other content, and have your own site for free, with no ads!
