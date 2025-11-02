@@ -1,0 +1,26 @@
+---
+title: "Speeding Towards Silicon: Building a RISC-V Convolution Accelerator"
+date: 2024-05-20
+permalink: /posts/2024/05/speeding-towards-silicon/
+tags:
+  - hardware acceleration
+  - chipyard
+  - risc-v
+  - asic design
+  - convolution
+---
+
+## Takeaways
+
+- **150× speedup** for RISC-V convolutions in simulation, and **65× speedup post-tapeout**.  
+- Designed a full **System-on-Chip** from scratch on **Intel 16 nm technology**.  
+- Overcame major integration challenges on a **TileLink-based NoC architecture**.  
+- Verified the accelerator on **real silicon**, developing C software to run 2D convolutions.
+
+Full version on Substack → [**Speeding Towards Silicon**](https://eyeamansh.substack.com/p/speeding-towards-silicon)
+
+---
+
+## Summary 
+
+In Berkeley’s tapeout course, our four-person team built a convolution accelerator from scratch — going from idea to silicon in just 15 weeks. We designed it to speed up 3×3 convolution operations using a custom multiply-accumulate pipeline integrated into the RISC-V Chipyard ecosystem. Working with evolving tools and minimal documentation forced us to rely on “tribal knowledge” and rapid iteration. After battling integration challenges and timing issues, our accelerator — BearlyML 24 — achieved up to 150× speedups in simulation and around 65× on real silicon. This chip ended up being demod to Apple. Seeing our design run successfully on hardware was the perfect ending to a fast, chaotic, and deeply rewarding project.
